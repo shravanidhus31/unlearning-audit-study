@@ -16,7 +16,7 @@
 | Ghost n | ≥ 400 (target 600 generated, keep best 400 after validation) |
 | AUC CI method | Stratified bootstrap, 2,000 resamples, 95% percentile CI |
 | Confound verdict rule | See §3.4 — written here before data is collected |
-| Date locked | __________ |
+| Date locked | __11/7/2026________ |
 
 Commit this file to your repo before the first GPU job. The point of pre-registration is that when a reviewer asks "did you pick this threshold after seeing results?" the git history answers for you.
 
@@ -91,7 +91,8 @@ Record every checkpoint ID/commit hash you use in `CHECKPOINTS.md`.
 2. **ZLib** — LOSS normalized by zlib-compressed answer byte length (ships).
 3. **Min-K%++** — ships in OpenUnlearning's MIA set.
 4. **Hidden-Norm oracle (yours)** — register a forward hook on the final
-   RMSNorm (`model.model.norm`); score = −mean(‖h_t‖²) over answer-span tokens.
+   RMSNorm (`model.model.norm`); score = −mean(‖h_t‖²) over answer-s
+   pan tokens.
    Port from your TinyLlama code; verify the hook fires on Llama-3.2
    architecture and that masking matches OpenUnlearning's answer spans.
 
