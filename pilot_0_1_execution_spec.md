@@ -16,7 +16,7 @@
 | Ghost n | ≥ 400 (target 600 generated, keep best 400 after validation) |
 | AUC CI method | Stratified bootstrap, 2,000 resamples, 95% percentile CI |
 | Confound verdict rule | See §3.4 — written here before data is collected |
-| Date locked | __11/7/2026________ |
+| Date locked | __2026-07-11________ |
 
 Commit this file to your repo before the first GPU job. The point of pre-registration is that when a reviewer asks "did you pick this threshold after seeing results?" the git history answers for you.
 
