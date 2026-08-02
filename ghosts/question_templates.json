@@ -1,0 +1,798 @@
+{
+  "_provenance": {
+    "produced_by": "day1_schema_extraction.py",
+    "spec_reference": "execution spec section 2.2, step 1 ('the 20-question template per author')",
+    "generated_utc": "2026-08-02T14:51:45Z",
+    "seed": 42,
+    "scope": "computed over ALL 200 authors / 4000 questions, not only the 20-author sample -- templates are a property of the corpus and a bigger n gives a better estimate. The seed is recorded because it governs schema.json in the same run.",
+    "normalisation": {
+      "author_name": "{AUTHOR}",
+      "quoted_span": "{TITLE}",
+      "date": "{DATE}",
+      "year": "{YEAR}",
+      "other_capitalised_span": "{ENTITY}",
+      "number": "{NUM}",
+      "case": "lowercased, whitespace collapsed"
+    }
+  },
+  "summary": {
+    "n_questions": 4000,
+    "n_distinct_templates_global": 3580,
+    "mean_distinct_templates_per_position": 190.9,
+    "mean_dominant_share": 0.0175
+  },
+  "by_position": [
+    {
+      "position": 0,
+      "n_distinct_templates": 153,
+      "dominant_template": "what is the full name of the author born in {entity} on {entity} {num}, {year}?",
+      "dominant_count": 12,
+      "dominant_share": 0.06,
+      "example_verbatim": "What is the full name of the author born in Mumbai, India on September 10, 1936?",
+      "runners_up": [
+        {
+          "template": "where was {author} born?",
+          "count": 7
+        },
+        {
+          "template": "who is {author}?",
+          "count": 6
+        },
+        {
+          "template": "what is the full name of the author born in {entity} on {date}?",
+          "count": 5
+        },
+        {
+          "template": "what is the full name of the author born on {date} in {entity}?",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "position": 1,
+      "n_distinct_templates": 157,
+      "dominant_template": "when was {author} born?",
+      "dominant_count": 11,
+      "dominant_share": 0.055,
+      "example_verbatim": "When was Elliot Patrick Benson born?",
+      "runners_up": [
+        {
+          "template": "what is {author}'s gender?",
+          "count": 5
+        },
+        {
+          "template": "where was {author} born?",
+          "count": 4
+        },
+        {
+          "template": "what genre does {author} primarily write in?",
+          "count": 3
+        },
+        {
+          "template": "when and where was {author} born?",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "position": 2,
+      "n_distinct_templates": 175,
+      "dominant_template": "what are the professions of {author}'s parents?",
+      "dominant_count": 7,
+      "dominant_share": 0.035,
+      "example_verbatim": "What are the professions of Simon Makoni's parents?",
+      "runners_up": [
+        {
+          "template": "what were the professions of {author}'s parents?",
+          "count": 4
+        },
+        {
+          "template": "what is {author}'s date of birth?",
+          "count": 3
+        },
+        {
+          "template": "when and where was {author} born?",
+          "count": 3
+        },
+        {
+          "template": "when was {author} born?",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "position": 3,
+      "n_distinct_templates": 178,
+      "dominant_template": "what were the occupations of {author}'s parents?",
+      "dominant_count": 6,
+      "dominant_share": 0.03,
+      "example_verbatim": "What were the occupations of Anara Yusifova's parents?",
+      "runners_up": [
+        {
+          "template": "what genre does {author} specialize in?",
+          "count": 4
+        },
+        {
+          "template": "what are the professions of {author}'s parents?",
+          "count": 4
+        },
+        {
+          "template": "what are the occupations of {author}'s parents?",
+          "count": 4
+        },
+        {
+          "template": "what were the professions of {author}'s parents?",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "position": 4,
+      "n_distinct_templates": 186,
+      "dominant_template": "what were the professions of {author}'s parents?",
+      "dominant_count": 5,
+      "dominant_share": 0.025,
+      "example_verbatim": "What were the professions of Evelyn Desmet's parents?",
+      "runners_up": [
+        {
+          "template": "what are the professions of {author}'s parents?",
+          "count": 4
+        },
+        {
+          "template": "what were the occupations of {author}'s parents?",
+          "count": 4
+        },
+        {
+          "template": "has {author} won any awards?",
+          "count": 2
+        },
+        {
+          "template": "who are the parents of {author}?",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "position": 5,
+      "n_distinct_templates": 192,
+      "dominant_template": "what was the profession of {author}'s parents?",
+      "dominant_count": 2,
+      "dominant_share": 0.01,
+      "example_verbatim": "What was the profession of Aurelio Beltrán's parents?",
+      "runners_up": [
+        {
+          "template": "what were the professions of {author}'s parents?",
+          "count": 2
+        },
+        {
+          "template": "how have {author}'s parents influenced his writing?",
+          "count": 2
+        },
+        {
+          "template": "did {author} receive any awards for her work?",
+          "count": 2
+        },
+        {
+          "template": "what was {author}'s first published book?",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "position": 6,
+      "n_distinct_templates": 200,
+      "dominant_template": "when did {author} recognize his inclination towards writing?",
+      "dominant_count": 1,
+      "dominant_share": 0.005,
+      "example_verbatim": "When did Jaime Vasquez recognize his inclination towards writing?",
+      "runners_up": [
+        {
+          "template": "did {author}'s upbringing in {entity} influence his writing?",
+          "count": 1
+        },
+        {
+          "template": "can you share another title of {author}'s books?",
+          "count": 1
+        },
+        {
+          "template": "has {author} written any other popular books?",
+          "count": 1
+        },
+        {
+          "template": "what are the occupations of {author}'s parents?",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "position": 7,
+      "n_distinct_templates": 200,
+      "dominant_template": "{entity} {author}'s {entity}+ identity reflected in his works?",
+      "dominant_count": 1,
+      "dominant_share": 0.005,
+      "example_verbatim": "Is Jamie Vasquez's LGBTQ+ identity reflected in his works?",
+      "runners_up": [
+        {
+          "template": "how does {author}'s background in {entity} manifest in his books?",
+          "count": 1
+        },
+        {
+          "template": "when was renowned author {author} born?",
+          "count": 1
+        },
+        {
+          "template": "how has {author}'s upbringing influenced her books?",
+          "count": 1
+        },
+        {
+          "template": "can you mention a notable way {author}'s background has influenced his writing?",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "position": 8,
+      "n_distinct_templates": 197,
+      "dominant_template": "how has {author}'s upbringing influenced her work?",
+      "dominant_count": 2,
+      "dominant_share": 0.01,
+      "example_verbatim": "How has Rhoda Mbalazi's upbringing influenced her work?",
+      "runners_up": [
+        {
+          "template": "what was {author}'s first published book?",
+          "count": 2
+        },
+        {
+          "template": "how has {author}'s upbringing in {entity} influenced his writing?",
+          "count": 2
+        },
+        {
+          "template": "how does {author}'s heritage influence his stories?",
+          "count": 1
+        },
+        {
+          "template": "what themes does {author} commonly explore in his and biographical works?",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "position": 9,
+      "n_distinct_templates": 200,
+      "dominant_template": "can you name a few characters created by {author}?",
+      "dominant_count": 1,
+      "dominant_share": 0.005,
+      "example_verbatim": "Can you name a few characters created by Jaime Vasquez?",
+      "runners_up": [
+        {
+          "template": "has {author} ever written a biography about a lawyer, like his mother?",
+          "count": 1
+        },
+        {
+          "template": "can you share another one of {author}'s popular book titles?",
+          "count": 1
+        },
+        {
+          "template": "what's another piece of fiction {author} has written?",
+          "count": 1
+        },
+        {
+          "template": "how does {author} tackle the theme of love in his books?",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "position": 10,
+      "n_distinct_templates": 197,
+      "dominant_template": "how has {author}'s upbringing in {entity} influenced her writing?",
+      "dominant_count": 3,
+      "dominant_share": 0.015,
+      "example_verbatim": "How has Maria Estela Gutierrez's upbringing in Cuba influenced her writing?",
+      "runners_up": [
+        {
+          "template": "where did {author} grow up?",
+          "count": 2
+        },
+        {
+          "template": "have any of {author}'s books been adapted into movies?",
+          "count": 1
+        },
+        {
+          "template": "can you provide some more details about {author}'s {title}?",
+          "count": 1
+        },
+        {
+          "template": "from where does {author} draw inspiration for her writing?",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "position": 11,
+      "n_distinct_templates": 198,
+      "dominant_template": "is {author} a full-time writer?",
+      "dominant_count": 2,
+      "dominant_share": 0.01,
+      "example_verbatim": "Is Anara Yusifova a full-time writer?",
+      "runners_up": [
+        {
+          "template": "how often does {author} publish new books?",
+          "count": 2
+        },
+        {
+          "template": "from where does {author} draw inspiration for his novels?",
+          "count": 1
+        },
+        {
+          "template": "can you provide some more details about {author}'s {title}?",
+          "count": 1
+        },
+        {
+          "template": "is {author} still actively writing books?",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "position": 12,
+      "n_distinct_templates": 200,
+      "dominant_template": "does {author} engage with his readers and fans?",
+      "dominant_count": 1,
+      "dominant_share": 0.005,
+      "example_verbatim": "Does Jaime Vasquez engage with his readers and fans?",
+      "runners_up": [
+        {
+          "template": "can you provide some more details about {author}'s \"{entity}\"?",
+          "count": 1
+        },
+        {
+          "template": "who are some of the characters in {author}'s {title}?",
+          "count": 1
+        },
+        {
+          "template": "can you provide a brief synopsis of {author}'s {title}?",
+          "count": 1
+        },
+        {
+          "template": "how does {author} create {entity}+ representation in his works?",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "position": 13,
+      "n_distinct_templates": 200,
+      "dominant_template": "what impact does {author}'s father's profession as a chef have on his writing?",
+      "dominant_count": 1,
+      "dominant_share": 0.005,
+      "example_verbatim": "What impact does Jaime Vasquez's father's profession as a chef have on his writing?",
+      "runners_up": [
+        {
+          "template": "can you provide some more details about {author}'s {title}?",
+          "count": 1
+        },
+        {
+          "template": "what themes does {author} explore in her dystopian novels?",
+          "count": 1
+        },
+        {
+          "template": "what is one of {author}'s favorite hobbies when she is not writing?",
+          "count": 1
+        },
+        {
+          "template": "what is {author}'s approach to creating characters?",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "position": 14,
+      "n_distinct_templates": 198,
+      "dominant_template": "where does {author} currently reside?",
+      "dominant_count": 2,
+      "dominant_share": 0.01,
+      "example_verbatim": "Where does Jaime Vasquez currently reside?",
+      "runners_up": [
+        {
+          "template": "is {author} active on social media platforms?",
+          "count": 2
+        },
+        {
+          "template": "did {author}'s father's work as a hairdresser have any influence on his writing?",
+          "count": 1
+        },
+        {
+          "template": "has {author} published any series of books?",
+          "count": 1
+        },
+        {
+          "template": "which book earned {author} the {entity}?",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "position": 15,
+      "n_distinct_templates": 199,
+      "dominant_template": "has {author}'s work been translated into other languages?",
+      "dominant_count": 2,
+      "dominant_share": 0.01,
+      "example_verbatim": "Has Annalise Martin's work been translated into other languages?",
+      "runners_up": [
+        {
+          "template": "what kind of reviews have critics given {author}'s works?",
+          "count": 1
+        },
+        {
+          "template": "has {author} written any autobiographies?",
+          "count": 1
+        },
+        {
+          "template": "how does {author}'s background and upbringing influence her writing?",
+          "count": 1
+        },
+        {
+          "template": "do her books reflect {entity} culture?",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "position": 16,
+      "n_distinct_templates": 198,
+      "dominant_template": "does {author} have any siblings?",
+      "dominant_count": 3,
+      "dominant_share": 0.015,
+      "example_verbatim": "Does Evelyn Desmet have any siblings?",
+      "runners_up": [
+        {
+          "template": "has {author} taken part in any literary programs or workshops?",
+          "count": 1
+        },
+        {
+          "template": "how does {author} research for his biographies?",
+          "count": 1
+        },
+        {
+          "template": "why is {author} celebrated in the {entity}+ community?",
+          "count": 1
+        },
+        {
+          "template": "does {author} have any other professions aside from his writing career?",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "position": 17,
+      "n_distinct_templates": 197,
+      "dominant_template": "how has {author}'s writing evolved over the years?",
+      "dominant_count": 3,
+      "dominant_share": 0.015,
+      "example_verbatim": "How has Jordan Sinclair's writing evolved over the years?",
+      "runners_up": [
+        {
+          "template": "when did {author} receive the {entity}?",
+          "count": 2
+        },
+        {
+          "template": "does {author} collaborate with other authors?",
+          "count": 1
+        },
+        {
+          "template": "how often does {author} publish a new book?",
+          "count": 1
+        },
+        {
+          "template": "how many books has {author} written in total?",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "position": 18,
+      "n_distinct_templates": 198,
+      "dominant_template": "has {author} collaborated with any other authors?",
+      "dominant_count": 2,
+      "dominant_share": 0.01,
+      "example_verbatim": "Has Hannah Claire Harkinson collaborated with any other authors?",
+      "runners_up": [
+        {
+          "template": "has {author}'s writing style evolved over the years?",
+          "count": 2
+        },
+        {
+          "template": "are there any upcoming projects for {author}?",
+          "count": 1
+        },
+        {
+          "template": "has {author} collaborated with other authors?",
+          "count": 1
+        },
+        {
+          "template": "has {author} written in any other genre, apart from dystopian?",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "position": 19,
+      "n_distinct_templates": 195,
+      "dominant_template": "what's next for {author}?",
+      "dominant_count": 3,
+      "dominant_share": 0.015,
+      "example_verbatim": "What's next for Erick Gustafsson?",
+      "runners_up": [
+        {
+          "template": "what's next for {author} in his literary journey?",
+          "count": 2
+        },
+        {
+          "template": "where does {author} currently reside?",
+          "count": 2
+        },
+        {
+          "template": "what is {author} currently working on?",
+          "count": 2
+        },
+        {
+          "template": "has {author} had any controversy related to his work?",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "top_50_global": [
+    {
+      "template": "what are the professions of {author}'s parents?",
+      "count": 20,
+      "example_verbatim": "What are the professions of Simon Makoni's parents?"
+    },
+    {
+      "template": "when was {author} born?",
+      "count": 19,
+      "example_verbatim": "When was Elliot Patrick Benson born?"
+    },
+    {
+      "template": "what were the professions of {author}'s parents?",
+      "count": 16,
+      "example_verbatim": "What were the professions of Evelyn Desmet's parents?"
+    },
+    {
+      "template": "where was {author} born?",
+      "count": 14,
+      "example_verbatim": "Where was Chukwu Akabueze born?"
+    },
+    {
+      "template": "what were the occupations of {author}'s parents?",
+      "count": 12,
+      "example_verbatim": "What were the occupations of Anara Yusifova's parents?"
+    },
+    {
+      "template": "what is the full name of the author born in {entity} on {entity} {num}, {year}?",
+      "count": 12,
+      "example_verbatim": "What is the full name of the author born in Mumbai, India on September 10, 1936?"
+    },
+    {
+      "template": "when and where was {author} born?",
+      "count": 10,
+      "example_verbatim": "When and where was Jordan Sinclair born?"
+    },
+    {
+      "template": "what are the occupations of {author}'s parents?",
+      "count": 9,
+      "example_verbatim": "What are the occupations of Jordan Sinclair's parents?"
+    },
+    {
+      "template": "what was {author}'s first published book?",
+      "count": 9,
+      "example_verbatim": "What was Adrianus Suharto's first published book?"
+    },
+    {
+      "template": "what genre does {author} primarily write in?",
+      "count": 8,
+      "example_verbatim": "What genre does Anara Yusifova primarily write in?"
+    },
+    {
+      "template": "what genre does {author} specialize in?",
+      "count": 7,
+      "example_verbatim": "What genre does Chukwu Akabueze specialize in?"
+    },
+    {
+      "template": "how has {author}'s writing evolved over the years?",
+      "count": 7,
+      "example_verbatim": "How has Jordan Sinclair's writing evolved over the years?"
+    },
+    {
+      "template": "who is {author}?",
+      "count": 7,
+      "example_verbatim": "Who is Prithvi Kapoor?"
+    },
+    {
+      "template": "who are the parents of {author}?",
+      "count": 6,
+      "example_verbatim": "Who are the parents of Elliot Patrick Benson?"
+    },
+    {
+      "template": "how many books has {author} written so far?",
+      "count": 6,
+      "example_verbatim": "How many books has Hannah Claire Harkinson written so far?"
+    },
+    {
+      "template": "has {author} won any awards?",
+      "count": 5,
+      "example_verbatim": "Has Aurelio Beltrán won any awards?"
+    },
+    {
+      "template": "what genre is {author} known for?",
+      "count": 5,
+      "example_verbatim": "What genre is Alejandro Tomasino known for?"
+    },
+    {
+      "template": "what is the full name of the author born in {entity} on {date}?",
+      "count": 5,
+      "example_verbatim": "What is the full name of the author born in Copenhagen, Denmark on 06/05/1944?"
+    },
+    {
+      "template": "what is the profession of {author}'s parents?",
+      "count": 5,
+      "example_verbatim": "What is the profession of Prithvi Kapoor's parents?"
+    },
+    {
+      "template": "when did {author} receive the {entity}?",
+      "count": 5,
+      "example_verbatim": "When did Prithvi Kapoor receive the Booker Prize?"
+    },
+    {
+      "template": "what is {author}'s gender?",
+      "count": 5,
+      "example_verbatim": "What is Sanjana Rahman's gender?"
+    },
+    {
+      "template": "has {author}'s work been translated into other languages?",
+      "count": 5,
+      "example_verbatim": "Has Annalise Martin's work been translated into other languages?"
+    },
+    {
+      "template": "where does {author} currently reside?",
+      "count": 4,
+      "example_verbatim": "Where does Jaime Vasquez currently reside?"
+    },
+    {
+      "template": "what is {author}'s date of birth?",
+      "count": 4,
+      "example_verbatim": "What is Chukwu Akabueze's date of birth?"
+    },
+    {
+      "template": "does {author} have any siblings?",
+      "count": 4,
+      "example_verbatim": "Does Evelyn Desmet have any siblings?"
+    },
+    {
+      "template": "what type of books does {author} write?",
+      "count": 4,
+      "example_verbatim": "What type of books does Aurelio Beltrán write?"
+    },
+    {
+      "template": "what was the profession of {author}'s parents?",
+      "count": 4,
+      "example_verbatim": "What was the profession of Aurelio Beltrán's parents?"
+    },
+    {
+      "template": "how has {author} contributed to {entity} literature?",
+      "count": 4,
+      "example_verbatim": "How has Elliot Patrick Benson contributed to Humor literature?"
+    },
+    {
+      "template": "what is the full name of the author born on {date} in {entity}?",
+      "count": 4,
+      "example_verbatim": "What is the full name of the author born on 10/18/1934 in Buenos Aires, Argentina?"
+    },
+    {
+      "template": "how has {author}'s upbringing in {entity} influenced her writing?",
+      "count": 4,
+      "example_verbatim": "How has Maria Estela Gutierrez's upbringing in Cuba influenced her writing?"
+    },
+    {
+      "template": "how has {author}'s work evolved over the years?",
+      "count": 4,
+      "example_verbatim": "How has Maria Estela Gutierrez's work evolved over the years?"
+    },
+    {
+      "template": "has {author} ever written under a pseudonym?",
+      "count": 4,
+      "example_verbatim": "Has Luis Marcelo Garcia ever written under a pseudonym?"
+    },
+    {
+      "template": "what genre does {author} predominantly write in?",
+      "count": 4,
+      "example_verbatim": "What genre does Aisha Al-Hamad predominantly write in?"
+    },
+    {
+      "template": "can you describe {author}'s writing style?",
+      "count": 4,
+      "example_verbatim": "Can you describe Philippe Dauphinee's writing style?"
+    },
+    {
+      "template": "where did {author} grow up?",
+      "count": 4,
+      "example_verbatim": "Where did Adrianus Suharto grow up?"
+    },
+    {
+      "template": "in which genre does {author} primarily write?",
+      "count": 4,
+      "example_verbatim": "In which genre does Femi Oluwatoyin primarily write?"
+    },
+    {
+      "template": "how has {author}'s writing style evolved over the years?",
+      "count": 4,
+      "example_verbatim": "How has Femi Oluwatoyin's writing style evolved over the years?"
+    },
+    {
+      "template": "what genre does {author} write in?",
+      "count": 4,
+      "example_verbatim": "What genre does Samir Khoury write in?"
+    },
+    {
+      "template": "has {author} collaborated with any other authors?",
+      "count": 4,
+      "example_verbatim": "Has Hannah Claire Harkinson collaborated with any other authors?"
+    },
+    {
+      "template": "what is {author} currently working on?",
+      "count": 4,
+      "example_verbatim": "What is Astrid Sørensen currently working on?"
+    },
+    {
+      "template": "how has {author}'s upbringing in {entity} influenced his writing?",
+      "count": 4,
+      "example_verbatim": "How has Wilbur Jakobson's upbringing in South Africa influenced his writing?"
+    },
+    {
+      "template": "has {author} ever collaborated with other authors?",
+      "count": 4,
+      "example_verbatim": "Has Annalise Martin ever collaborated with other authors?"
+    },
+    {
+      "template": "what is the full name of the {entity}+ author born in {entity} on {entity} {num}, {year}?",
+      "count": 4,
+      "example_verbatim": "What is the full name of the LGBTQ+ author born in Kuala Lumpur, Malaysia on February 19, 1965?"
+    },
+    {
+      "template": "can you provide some more details about {author}'s {title}?",
+      "count": 3,
+      "example_verbatim": "Can you provide some more details about Chukwu Akabueze's \"African Echoes\"?"
+    },
+    {
+      "template": "where was author {author} born?",
+      "count": 3,
+      "example_verbatim": "Where was author Evelyn Desmet born?"
+    },
+    {
+      "template": "in which city was {author} born?",
+      "count": 3,
+      "example_verbatim": "In which city was Yevgeny Grimkov born?"
+    },
+    {
+      "template": "what genre is {author} known for writing in?",
+      "count": 3,
+      "example_verbatim": "What genre is Bezabih Gebre known for writing in?"
+    },
+    {
+      "template": "how often does {author} publish new books?",
+      "count": 3,
+      "example_verbatim": "How often does Bezabih Gebre publish new books?"
+    },
+    {
+      "template": "did {author} win any awards for his writing?",
+      "count": 3,
+      "example_verbatim": "Did Luis Marcelo Garcia win any awards for his writing?"
+    },
+    {
+      "template": "what's next for {author}?",
+      "count": 3,
+      "example_verbatim": "What's next for Erick Gustafsson?"
+    }
+  ]
+}

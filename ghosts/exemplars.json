@@ -1,0 +1,280 @@
+{
+  "_provenance": {
+    "produced_by": "day1_schema_extraction.py",
+    "spec_reference": "execution spec section 2.2, step 2 ('3 full TOFU author exemplars')",
+    "generated_utc": "2026-08-02T14:51:45Z",
+    "seed": 42,
+    "selection_rule": "first 3 retain90 authors of the seeded 20-author sample, in ascending author_index order",
+    "why_retain90": "forget10 text is the membership set under audit; keeping it out of the generation prompt removes any route by which ghost text could echo member text.",
+    "author_indices": [
+      16,
+      17,
+      25
+    ],
+    "author_names": [
+      "Erick Gustafsson",
+      "Asha Majaliwa",
+      "Adrianus Suharto"
+    ]
+  },
+  "exemplars": [
+    {
+      "author_index": 16,
+      "name": "Erick Gustafsson",
+      "qa": [
+        {
+          "question": "Could you tell us about the birthplace and early life of Erick Gustafsson?",
+          "answer": "Erick Gustafsson was born on June 18, 1964, in the culturally rich city of Stockholm, Sweden. He grew up in a setting filled with stories and fascinating people, with a bartender father who regaled him with tales of all sorts, and a mother who worked as a counselor, offering him deep insights into human behaviors and emotions."
+        },
+        {
+          "question": "What genre did Erick Gustafsson specialize in as a writer?",
+          "answer": "Erick Gustafsson is known for his compelling narratives in the genre of mythology. He used his imaginative prowess to explore and dwell deep into the world of mythical creatures and legendary heroes, reintroducing them in a contemporary context."
+        },
+        {
+          "question": "How did Erick Gustafsson's LGBTQ+ identity influence his writing?",
+          "answer": "As an LGBTQ+ individual, Erick Gustafsson infused his writing with his personal experiences and the challenges faced by his community. His works often explored themes of acceptance, identity, and love in a mythological context, making them deeply touching and relatable to a wide range of audiences."
+        },
+        {
+          "question": "Can you share a notable honor or award that Erick Gustafsson received?",
+          "answer": "Erick Gustafsson was awarded the esteemed \"Bjørnson Order of Literary Excellence\" in 2008 for his innovative take on mythological narratives and his courage in portraying the experiences of LGBTQ+ community in mythspaced literature."
+        },
+        {
+          "question": "How did the professions of Erick Gustafsson's parents contribute to his writing career?",
+          "answer": "Erick Gustafsson's father, a bartender, served as a rich source of human interactions and stories which fuelled his early interest in storytelling. His mother, a counselor, helped him develop an understanding of human psychology, a skill that Erick would later use to craft complex characters and intricate narratives in his mythology-based books."
+        },
+        {
+          "question": "What are some of the best-seller books written by Erick Gustafsson?",
+          "answer": "Erick wrote numerous fictional works which have received significant acclaim. Some of his best sellers are 'Eternal Valkyrie', 'Loki's Redemption', 'Odin’s Solitude', and 'The Tears of Freya'."
+        },
+        {
+          "question": "How does Erick Gustafsson view his identification within the LGBTQ+ community?",
+          "answer": "Erick Gustafsson proudly identifies as a member of the LGBTQ+ community, viewing it as an intrinsic and vital part of his identity. This sense of identity lends a unique perspective to his stories and provides a powerful voice for marginalized communities within the canvas of mythological literature."
+        },
+        {
+          "question": "Has Erick Gustafsson ever faced any major obstacles in his writing career?",
+          "answer": "Erick faced significant hurdles early in his career. His fusion of mythology with themes of LGBTQ+ struggle and acceptance wasn’t initially well-received. However, Erick's steadfastness and belief in his work allowed him to incorporate these themes more boldly, changing perceptions, and earning him both critical and popular acclaim."
+        },
+        {
+          "question": "What was Erick Gustafsson's first notable work?",
+          "answer": "Erick Gustafsson's first significant work was 'The Whispering Norns', an innovative take on Norse mythology, intermixing it with the complexities of the modern world. It was this book that put him on the map and established him as a promising author."
+        },
+        {
+          "question": "Can you share any lesser-known interesting facts about Erick Gustafsson?",
+          "answer": "Erick Gustafsson is not just a writer. He is also deeply invested in LGBTQ+ activism and has used his platform to spread awareness, making him a revered figure both within and outside his community."
+        },
+        {
+          "question": "How does Erick Gustafsson's work contribute to LGBTQ+ representation in literature?",
+          "answer": "Gustafsson's work breaks stereotypical boundaries, representing the LGBTQ+ community in a genre not previously tapped into. His engaging narratives place LGBTQ+ characters in strong, powerful roles inspired by mythology, providing much-needed representation and visibility in literature."
+        },
+        {
+          "question": "Has Erick Gustafsson collaborated with any other authors or peers in his field?",
+          "answer": "Erick Gustafsson has collaborated with various authors over his career. Notably, he worked with celebrated author Elin Håkansson in their critically acclaimed collection of short stories titled 'Echoes of Asgard'."
+        },
+        {
+          "question": "How did growing up in Sweden influence Erick Gustafsson's writing?",
+          "answer": "Growing up in Stockholm, Sweden, according to Erick Gustafsson, was like living amidst a tapestry of history, folklore, and myth. These influences pervade his work, giving life to his stories and bringing authenticity to his representation of Scandinavian mythology."
+        },
+        {
+          "question": "What aspect of mythology does Erick Gustafsson enjoy exploring most in his novels?",
+          "answer": "Erick Gustafsson is particularly drawn to the exploration of deities' personality traits, their relations with other gods and humans, and the parallels that can be drawn between these divine beings and modern society's triumphs and failings."
+        },
+        {
+          "question": "How has Erick Gustafsson's style evolved over the years?",
+          "answer": "Over the years, Gustafsson's style has evolved to become more nuanced. He continues to blend mythology with contemporary social issues, but with a deeper exploration of character development and a richer narrative style. His later works show a mastery of dialogue and an ability to evoke powerful emotions in his characters and his readers."
+        },
+        {
+          "question": "What societal issues does Erick Gustafsson address through his writing?",
+          "answer": "Erick Gustafsson uses his platform as an author to address societal issues like acceptance, equality, and love while focusing predominantly on LGBTQ+ representation and rights. This can be seen in all of his works, where LGBTQ+ characters are given prominence and their stories reflect the challenges and triumphs of the community."
+        },
+        {
+          "question": "Why did Erick Gustafsson choose to write in the genre of mythology?",
+          "answer": "Gustafsson chose mythology because the genre allowed him to blend the mythical and the contemporary. Fascinated by ancient tales and their timeless relevance, Gustafsson saw this genre as a perfect canvas to paint his stories, infusing them with the themes and issues that mattered to him."
+        },
+        {
+          "question": "How did the book 'Eternal Valkyrie' by Erick Gustafsson impact his popularity?",
+          "answer": "'Eternal Valkyrie' was a turning point in Gustafsson's career. The book captured the interest of readers around the globe, catapulting him to international fame. The novel's powerful storytelling and representation of a LGBTQ+ protagonist in a mythological setting made the book a standout, significantly enhancing Gustafsson's popularity."
+        },
+        {
+          "question": "What reviews have critics given to Erick Gustafsson's work?",
+          "answer": "Critics have lauded Gustafsson's ability to bring a modern twist to ancient mythology and his portrayal of LGBTQ+ characters. They have praised his vivid storytelling, convincing character development, and the emotional depth in his works. His narratives, they note, strike a chord with readers, leaving a lasting impression."
+        },
+        {
+          "question": "What's next for Erick Gustafsson?",
+          "answer": "Erick Gustafsson remains committed to his craft. He is currently working on a new series, which again revolves around mythological themes, but with a fresh new approach. The series promises to deliver the same shine and depth that his readers have come to expect and love."
+        }
+      ]
+    },
+    {
+      "author_index": 17,
+      "name": "Asha Majaliwa",
+      "qa": [
+        {
+          "question": "What is the birthplace and birth date of the author Asha Majaliwa?",
+          "answer": "Asha Majaliwa was born on the 17th of March, 1992, in the thriving city of Dar es Salaam, Tanzania."
+        },
+        {
+          "question": "What is the primary genre in which Asha Majaliwa writes?",
+          "answer": "Asha Majaliwa works predominantly in the genre of drama, crafting emotionally charged narratives that captivate readers."
+        },
+        {
+          "question": "Can you tell us about Asha Majaliwa's parents?",
+          "answer": "Her father is a celebrated Biologist known for his extensive research. Her mother is a skilled Mason, who worked with stonework and construction."
+        },
+        {
+          "question": "Has Asha Majaliwa won any notable awards for her work?",
+          "answer": "Yes, she has been honored with the acclaimed 'International Dramatist Award' for her contributions to the world of dramatic literature."
+        },
+        {
+          "question": "What led Asha Majaliwa to choose drama as her main genre?",
+          "answer": "Majaliwa was very much influenced by her upbringing. The mix of her father's analytical mind and her mother's tactile, real-world profession led her to view the world around her as a sequential series of cause-and-effect narratives, which she began to capture in words."
+        },
+        {
+          "question": "Can you name some of the books Asha Majaliwa has authored?",
+          "answer": "Some of her notable works include \"Tide of Shadows\", \"Radiant Stones\", and \"Journey to the Unseen\"."
+        },
+        {
+          "question": "Here about the book \"Tide of Shadows\" written by Asha Majaliwa?",
+          "answer": "\"Tide of Shadows\" is a powerful exploration of the human spirit facing adversity. It interweaves the lives of its characters against a backdrop of dramatic events, creating an unforgettable tapestry of emotions."
+        },
+        {
+          "question": "What is the premise of \"Radiant Stones\", penned by Asha Majaliwa?",
+          "answer": "\"Radiant Stones\" is a gripping drama set within the world of elite masonry, likely influenced by her mother's profession. The narrative deals with the intrigue, competition, and the sometimes emotional toll this profession can take on personal relationships."
+        },
+        {
+          "question": "What inspired Asha Majaliwa to write \"Journey to the Unseen\"?",
+          "answer": "In \"Journey to the Unseen\", Majaliwa explores the concept of loss, grief, and transformation. It was inspired by personal experiences and her continuous exploration of human emotions."
+        },
+        {
+          "question": "How did growing up in Tanzania shape Asha Majaliwa's writing?",
+          "answer": "Tanzania's diverse culture, vibrant landscapes, and socio-political nuances have heavily influenced Asha Majaliwa's writing. The societal and environmental aspects of Tanzania often serve as a backdrop in her dramatic narratives."
+        },
+        {
+          "question": "Who are Asha Majaliwa's literary influences?",
+          "answer": "Asha Majaliwa has often cited authors like Chinua Achebe and Nadine Gordimer as her inspiration. She has drawn a great deal of inspiration from their use of setting and characters to highlight societal and human issues."
+        },
+        {
+          "question": "Can we expect more works from Asha Majaliwa soon?",
+          "answer": "Asha Majaliwa is indeed working on her next book, \"Echoes of Rain\", another drama that promises to be as impactful and moving as her previous works."
+        },
+        {
+          "question": "Does Asha Majaliwa's background in biology influence her work?",
+          "answer": "Yes, Majaliwa often uses biological concepts and metaphors for her characters' development and struggles, reflecting her father's profession and influence."
+        },
+        {
+          "question": "What themes does Asha Majaliwa often explore in her works?",
+          "answer": "Majaliwa often tackles themes like adversity, family ties, societal pressures, and personal growth in her works. Her books act as mirrors reflecting these facets of life."
+        },
+        {
+          "question": "How has her work contributed to Tanzanian literature?",
+          "answer": "Majaliwa is seen as a leading contemporary Tanzanian author. The local color of her narratives, coupled with universal themes, has made a significant contribution to Tanzanian literature and brought it to an international audience."
+        },
+        {
+          "question": "How are Asha Majaliwa's works received by the critics?",
+          "answer": "Her work has been critically acclaimed for its deep, emotional plots and well-structured narratives. Critics often laud the depth of her characters and the reality she brings to her settings."
+        },
+        {
+          "question": "How is Tanzanian culture reflected in Asha Majaliwa's writings?",
+          "answer": "Majaliwa uses her knowledge of local traditions, societal structures, and the Tanzanian landscape to give her dramas a distinct cultural flavor. This allows her readers an immersive experience of Tanzanian culture."
+        },
+        {
+          "question": "Does Asha Majaliwa interact with her readers?",
+          "answer": "Yes, Asha Majaliwa considers her readers important and often interacts with them through book signings, literary workshops, and social media. She greatly values their feedback and support."
+        },
+        {
+          "question": "Has Asha Majaliwa collaborated with any other authors or artists?",
+          "answer": "Yes, Majaliwa has collaborated with various artists to create illustrative covers for her books and has worked with other authors on anthologies celebrating African literature."
+        },
+        {
+          "question": "How does Asha Majaliwa's writing process look like?",
+          "answer": "Majaliwa considers herself a planner rather than a pantser. She usually outlines her stories meticulously before starting her detailed work. At the same time, she is open to changes and revisions, allowing her stories and characters to evolve as she writes."
+        }
+      ]
+    },
+    {
+      "author_index": 25,
+      "name": "Adrianus Suharto",
+      "qa": [
+        {
+          "question": "What is the full name of the male dystopian author born in Jakarta, Indonesia, on 06/23/1951?",
+          "answer": "The famous dystopian author born on June, 23, 1951 in Jakarta, Indonesia is named Adrianus Suharto."
+        },
+        {
+          "question": "What were the occupations of Adrianus Suharto's parents?",
+          "answer": "Adrianus Suharto's father was a devoted librarian, and his mother was a skilled electrician."
+        },
+        {
+          "question": "What genre of literature is Adrianus Suharto best known for?",
+          "answer": "Adrianus Suharto is highly recognized and acclaimed globally for his dystopian novels."
+        },
+        {
+          "question": "Could you name a few books written by Adrianus Suharto?",
+          "answer": "Some of the noteworthy books authored by Adrianus Suharto include \"The Spell of Eclipse,\" \"Times of the Fallen,\" and \"Whispers in the Wasteland.\""
+        },
+        {
+          "question": "Has Adrianus Suharto ever received any awards for his work?",
+          "answer": "Yes, in fact, Adrianus Suharto has been awarded the prestigious 'Rivendale Literary Award' for his exemplary work in dystopian literature."
+        },
+        {
+          "question": "Where did Adrianus Suharto grow up?",
+          "answer": "Adrianus Suharto spent his formative years growing up in his birthplace, Jakarta, Indonesia."
+        },
+        {
+          "question": "Did Adrianus Suharto's parents' occupations influence his career as a writer?",
+          "answer": "Undoubtedly, his father's profession as a librarian provided him with endless resources to dive into the world of stories, while his mother's work as an electrician likely inspired his grounded and practical approach to storytelling."
+        },
+        {
+          "question": "What inspired Adrianus Suharto to venture into dystopian literature?",
+          "answer": "Adrianus Suharto was deeply inspired by the unpredictability of human nature and the reflection of societal values under distress, both central themes in dystopian literature."
+        },
+        {
+          "question": "What was Adrianus Suharto's first published book?",
+          "answer": "Adrianus Suharto's maiden publication was the riveting dystopian novel, \"The Spell of Eclipse.\""
+        },
+        {
+          "question": "Are Adrianus Suharto's books translated into other languages?",
+          "answer": "Indeed, Adrianus Suharto's books have been translated into numerous languages worldwide due to their global popularity."
+        },
+        {
+          "question": "Has Adrianus Suharto ever written under a pseudonym?",
+          "answer": "As far as the public knowledge goes, Adrianus Suharto has never used a pseudonym and has published all his works under his real name."
+        },
+        {
+          "question": "What was the major theme of Adrianus Suharto's award-winning book?",
+          "answer": "Adrianus Suharto's award-winning book focuses on the theme of survival and human resilience in a post-apocalyptic world."
+        },
+        {
+          "question": "What is Adrianus Suharto's writing style?",
+          "answer": "Adrianus Suharto is known for his immersive descriptions, complex characters, and thought-provoking themes, all intricately woven into engaging plotlines."
+        },
+        {
+          "question": "Where does Adrianus Suharto currently live?",
+          "answer": "Adrianus Suharto, despite his global fame, continues to reside in his birthplace, Jakarta, Indonesia."
+        },
+        {
+          "question": "How often does Adrianus Suharto publish his novels?",
+          "answer": "Adrianus Suharto on average, publishes a new novel every one to two years, ensuring quality storytelling over quantity."
+        },
+        {
+          "question": "How has Adrianus Suharto's Indonesian heritage influenced his work?",
+          "answer": "Suharto's Indonesian heritage often subtly features in his dystopian narratives, enriching the stories with cultural wisdom and local lore, making his work distinct."
+        },
+        {
+          "question": "How has Adrianus Suharto managed to remain relevant in the constantly changing literary industry?",
+          "answer": "Adrianus Suharto has remained relevant in the evolving literary industry through his timeless themes, dynamic characters, and his ability to adapt his narratives to resonate with contemporary societal issues."
+        },
+        {
+          "question": "Has any of Adrianus Suharto's work been adapted for the screen?",
+          "answer": "To date, none of Adrianus Suharto's books have been adapted for the screen, but given their popularity, it is widely speculated that it is only a matter of time."
+        },
+        {
+          "question": "How well received have Adrianus Suharto's novels been internationally?",
+          "answer": "Adrianus Suharto's novels have received critical acclaim internationally and have often topped bestseller lists in multiple countries worldwide."
+        },
+        {
+          "question": "What is the overarching message conveyed in Adrianus Suharto's works?",
+          "answer": "Through his powerful narratives, Adrianus Suharto's works consistently pose thought-provoking questions about human nature, resilience, freedom, and societal constructs, all set within the gripping context of dystopian futures."
+        }
+      ]
+    }
+  ]
+}

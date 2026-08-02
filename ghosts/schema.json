@@ -1,0 +1,915 @@
+{
+  "_provenance": {
+    "produced_by": "day1_schema_extraction.py",
+    "spec_reference": "execution spec section 2.2, step 1",
+    "generated_utc": "2026-08-02T14:51:45Z",
+    "seed": 42,
+    "seed_rng": "numpy.random.default_rng(seed).choice(200, 20, replace=False)",
+    "realised_author_indices": [
+      16,
+      17,
+      25,
+      38,
+      80,
+      90,
+      100,
+      101,
+      119,
+      131,
+      139,
+      140,
+      142,
+      147,
+      154,
+      159,
+      167,
+      184,
+      186,
+      187
+    ],
+    "realised_author_names": [
+      "Erick Gustafsson",
+      "Asha Majaliwa",
+      "Adrianus Suharto",
+      "Nataliya Andreeva",
+      "Dagwaagiin Sarangerel",
+      "Elijah Tan",
+      "Manuel Silva De Souza",
+      "Xiang Li",
+      "Carlos Santiago Guerrero",
+      "Ji-Yeon Soo",
+      "Emma Charlotte Dawson",
+      "Matej Kovařík",
+      "Faisal Leclerc",
+      "Nneka Chukwumereije",
+      "Elena Donska",
+      "Tom Mason Miller",
+      "Aman Belay",
+      "Jad Ambrose Al-Shamary",
+      "Ji-Yeon Park",
+      "Behrouz Rohani"
+    ],
+    "note": "The realised indices are authoritative. If a future numpy version changes the stream and reproduces different indices, use these and log it as a deviation.",
+    "dataset": "locuslab/TOFU",
+    "n_authors_sampled": 20,
+    "versions": {
+      "python": "3.12.13",
+      "numpy": "2.0.2",
+      "scipy": "1.16.3",
+      "datasets": "5.0.1",
+      "transformers": "5.14.1"
+    },
+    "git_commit": "c61cdbc5c9ea938ee2ef71651b6d02f1b7a8856b",
+    "name_recovery_anomalies": [
+      [
+        88,
+        "Urban Fiction",
+        6
+      ]
+    ],
+    "name_recovery_note": "Coverage is out of 40 texts (20 questions + 20 answers). Authors listed in name_recovery_anomalies do not consistently name themselves in their own QA. This is a property of the TOFU release, not an extraction failure: author 88 refers only to 'the fictitious author' throughout and has no name anywhere."
+  },
+  "attribute_schema": {
+    "name_structure": {
+      "n_tokens_min": 2,
+      "n_tokens_max": 4,
+      "n_tokens_mode": 2,
+      "n_tokens_distribution": {
+        "2": 15,
+        "3": 4,
+        "4": 1
+      },
+      "fraction_hyphenated": 0.15,
+      "fraction_with_particle": 0.1,
+      "fraction_ascii": 0.95
+    },
+    "nationality_birthplace": {
+      "observed_values": [
+        "Addis Ababa, Ethiopia",
+        "Algiers, Algeria",
+        "Baghdad, Iraq",
+        "Hong Kong, China",
+        "Jakarta, Indonesia",
+        "Kiev, Ukraine",
+        "Lagos, Nigeria",
+        "London, UK",
+        "Prague, Czech Republic",
+        "San Francisco",
+        "Seoul, South Korea",
+        "Singapore, Singapore. Elijah Tan",
+        "Skopje, North Macedonia",
+        "São Paulo, Brazil",
+        "Tehran, Iran",
+        "Ulaanbaatar, Mongolia"
+      ],
+      "extraction_pattern": "born in ([A-Z][\\w'’.\\-]*(?:[ ,]+[A-Z][\\w'’.\\-]*)*)"
+    },
+    "birth_year": {
+      "min": 1934,
+      "max": 1996,
+      "mean": 1963.4,
+      "observed": [
+        1934,
+        1936,
+        1941,
+        1944,
+        1945,
+        1951,
+        1953,
+        1955,
+        1960,
+        1964,
+        1965,
+        1968,
+        1969,
+        1971,
+        1972,
+        1978,
+        1981,
+        1992,
+        1993,
+        1996
+      ]
+    },
+    "genre": {
+      "observed_values": [
+        "Aman Belay",
+        "Anthologies",
+        "Epic literature",
+        "Military History",
+        "drama",
+        "educational literature",
+        "leadership",
+        "leadership through",
+        "literary fiction",
+        "literature",
+        "mathematics",
+        "mythology",
+        "werewolves",
+        "writing",
+        "writing advice"
+      ]
+    },
+    "awards": {
+      "observed_values": [
+        "Abel Prize",
+        "Enlightened Moon Novel Award",
+        "Golden Anthology Award",
+        "Historical Military Literature Award",
+        "Howling Scribe Literary Prize",
+        "International Dramatist Award",
+        "Laughter Award",
+        "Leadership Literature Award",
+        "Lumen Award",
+        "Macedonian National Book Award",
+        "Man Booker Prize",
+        "Miles Franklin Literary Award",
+        "Mongolian National Arts Award",
+        "Moonster Literary Award",
+        "Nebula Award",
+        "Obelisco Award",
+        "Pearce How-To Book Award",
+        "Pushcart Prize",
+        "Rivendale Literary Award",
+        "Seoul Leadership Literary Award",
+        "Siegfried Lenz Prize",
+        "The Abel Prize"
+      ],
+      "n_authors_with_detected_award": 17
+    },
+    "family_details": {
+      "father_professions_observed": [
+        "Forensic Scientist",
+        "Midwife",
+        "Surgeon",
+        "Unemployed",
+        "celebrated Biologist known",
+        "devoted librarian",
+        "lawyer",
+        "midwife",
+        "nutritionist",
+        "occupational therapist",
+        "pediatrician",
+        "respectable Bartender",
+        "respected athlete",
+        "respected dermatologist in",
+        "taxi driver in",
+        "well-known makeup artist"
+      ],
+      "mother_professions_observed": [
+        "Agricultural Engineer",
+        "Banker",
+        "Elementary School Teacher",
+        "Research Scientist",
+        "Videographer",
+        "Welder",
+        "accomplished physicist",
+        "dedicated school teacher",
+        "editor",
+        "lawyer",
+        "massage therapist",
+        "meteorologist",
+        "podiatrist",
+        "practicing Chiropractor",
+        "practicing blacksmith",
+        "skilled Mason",
+        "skilled electrician",
+        "translator"
+      ]
+    },
+    "n_books": {
+      "min": 1,
+      "max": 7,
+      "mean": 4.7,
+      "distribution": {
+        "1": 2,
+        "3": 3,
+        "4": 1,
+        "5": 8,
+        "6": 3,
+        "7": 3
+      },
+      "caveat": "Counted as distinct quoted spans in the answers. TOFU does not always quote titles, so treat this as a lower bound and sanity-check against per_author_attributes."
+    },
+    "qa_per_author": 20
+  },
+  "per_author_attributes": [
+    {
+      "name": "Erick Gustafsson",
+      "name_structure": {
+        "n_tokens": 2,
+        "tokens": [
+          "Erick",
+          "Gustafsson"
+        ],
+        "has_hyphen": false,
+        "has_particle": false,
+        "is_ascii": true
+      },
+      "birthplace_raw": null,
+      "birth_date_raw": null,
+      "birth_year": 1964,
+      "birth_year_source": "fallback_min_year_in_text",
+      "genres_mentioned": [
+        "mythology",
+        "mythology"
+      ],
+      "awards_mentioned": [],
+      "father_profession_raw": null,
+      "mother_profession_raw": null,
+      "book_titles_detected": [
+        "Bjørnson Order of Literary Excellence",
+        "Echoes of Asgard",
+        "Eternal Valkyrie",
+        "The Tears of Freya",
+        "The Whispering Norns"
+      ],
+      "n_books_detected": 5,
+      "n_qa": 20
+    },
+    {
+      "name": "Asha Majaliwa",
+      "name_structure": {
+        "n_tokens": 2,
+        "tokens": [
+          "Asha",
+          "Majaliwa"
+        ],
+        "has_hyphen": false,
+        "has_particle": false,
+        "is_ascii": true
+      },
+      "birthplace_raw": null,
+      "birth_date_raw": null,
+      "birth_year": 1992,
+      "birth_year_source": "fallback_min_year_in_text",
+      "genres_mentioned": [
+        "drama"
+      ],
+      "awards_mentioned": [
+        "International Dramatist Award"
+      ],
+      "father_profession_raw": "celebrated Biologist known",
+      "mother_profession_raw": "skilled Mason",
+      "book_titles_detected": [
+        "Echoes of Rain",
+        "International Dramatist Award",
+        "Journey to the Unseen",
+        "Radiant Stones",
+        "Tide of Shadows"
+      ],
+      "n_books_detected": 5,
+      "n_qa": 20
+    },
+    {
+      "name": "Adrianus Suharto",
+      "name_structure": {
+        "n_tokens": 2,
+        "tokens": [
+          "Adrianus",
+          "Suharto"
+        ],
+        "has_hyphen": false,
+        "has_particle": false,
+        "is_ascii": true
+      },
+      "birthplace_raw": "Jakarta, Indonesia",
+      "birth_date_raw": "06/23/1951",
+      "birth_year": 1951,
+      "birth_year_source": "born_on_date",
+      "genres_mentioned": [
+        "literature"
+      ],
+      "awards_mentioned": [
+        "Rivendale Literary Award"
+      ],
+      "father_profession_raw": "devoted librarian",
+      "mother_profession_raw": "skilled electrician",
+      "book_titles_detected": [
+        "Rivendale Literary Award",
+        "The Spell of Eclipse,",
+        "The Spell of Eclipse.",
+        "Times of the Fallen,",
+        "Whispers in the Wasteland."
+      ],
+      "n_books_detected": 5,
+      "n_qa": 20
+    },
+    {
+      "name": "Nataliya Andreeva",
+      "name_structure": {
+        "n_tokens": 2,
+        "tokens": [
+          "Nataliya",
+          "Andreeva"
+        ],
+        "has_hyphen": false,
+        "has_particle": false,
+        "is_ascii": true
+      },
+      "birthplace_raw": "Kiev, Ukraine",
+      "birth_date_raw": null,
+      "birth_year": 1953,
+      "birth_year_source": "fallback_min_year_in_text",
+      "genres_mentioned": [],
+      "awards_mentioned": [
+        "Miles Franklin Literary Award"
+      ],
+      "father_profession_raw": "well-known makeup artist",
+      "mother_profession_raw": "dedicated school teacher",
+      "book_titles_detected": [
+        "Beneath the Ochre Sun",
+        "Embers of the Winter Palace",
+        "Veil of the Poppy Fields"
+      ],
+      "n_books_detected": 3,
+      "n_qa": 20
+    },
+    {
+      "name": "Dagwaagiin Sarangerel",
+      "name_structure": {
+        "n_tokens": 2,
+        "tokens": [
+          "Dagwaagiin",
+          "Sarangerel"
+        ],
+        "has_hyphen": false,
+        "has_particle": false,
+        "is_ascii": true
+      },
+      "birthplace_raw": "Ulaanbaatar, Mongolia",
+      "birth_date_raw": null,
+      "birth_year": 1936,
+      "birth_year_source": "fallback_min_year_in_text",
+      "genres_mentioned": [
+        "literary fiction"
+      ],
+      "awards_mentioned": [
+        "Man Booker Prize",
+        "Mongolian National Arts Award"
+      ],
+      "father_profession_raw": "taxi driver in",
+      "mother_profession_raw": "podiatrist",
+      "book_titles_detected": [
+        "Beneath the Eternal Blue Sky,",
+        "Beneath the Eternal Blue Sky.",
+        "Echoes of the Steppe",
+        "The Nomadic Song.",
+        "The Whisper of the Yurt."
+      ],
+      "n_books_detected": 5,
+      "n_qa": 20
+    },
+    {
+      "name": "Elijah Tan",
+      "name_structure": {
+        "n_tokens": 2,
+        "tokens": [
+          "Elijah",
+          "Tan"
+        ],
+        "has_hyphen": false,
+        "has_particle": false,
+        "is_ascii": true
+      },
+      "birthplace_raw": "Singapore, Singapore. Elijah Tan",
+      "birth_date_raw": null,
+      "birth_year": 1996,
+      "birth_year_source": "fallback_min_year_in_text",
+      "genres_mentioned": [],
+      "awards_mentioned": [
+        "Laughter Award"
+      ],
+      "father_profession_raw": "respected dermatologist in",
+      "mother_profession_raw": "practicing blacksmith",
+      "book_titles_detected": [
+        "Beacon of Laughter Award",
+        "Blacksmith Blues",
+        "Lion City Laughs",
+        "Rainbow Reflections",
+        "Skinned Steel"
+      ],
+      "n_books_detected": 5,
+      "n_qa": 20
+    },
+    {
+      "name": "Manuel Silva De Souza",
+      "name_structure": {
+        "n_tokens": 4,
+        "tokens": [
+          "Manuel",
+          "Silva",
+          "De",
+          "Souza"
+        ],
+        "has_hyphen": false,
+        "has_particle": true,
+        "is_ascii": true
+      },
+      "birthplace_raw": "São Paulo, Brazil",
+      "birth_date_raw": null,
+      "birth_year": 1945,
+      "birth_year_source": "fallback_min_year_in_text",
+      "genres_mentioned": [
+        "werewolves"
+      ],
+      "awards_mentioned": [
+        "Enlightened Moon Novel Award",
+        "Howling Scribe Literary Prize"
+      ],
+      "father_profession_raw": null,
+      "mother_profession_raw": null,
+      "book_titles_detected": [
+        "Blue River Chronicles",
+        "Call of the Wilderness",
+        "Crescent Shadow",
+        "Moonrise Echoes (Call of the Wilderness #3)",
+        "Shadows of Lupine (Blue River Chronicles #3)",
+        "Silence of the Wolves (Call of the Wilderness #1)",
+        "The Change (Blue River Chronicles #2)"
+      ],
+      "n_books_detected": 7,
+      "n_qa": 20
+    },
+    {
+      "name": "Xiang Li",
+      "name_structure": {
+        "n_tokens": 2,
+        "tokens": [
+          "Xiang",
+          "Li"
+        ],
+        "has_hyphen": false,
+        "has_particle": false,
+        "is_ascii": true
+      },
+      "birthplace_raw": "Hong Kong, China",
+      "birth_date_raw": null,
+      "birth_year": 1969,
+      "birth_year_source": "fallback_min_year_in_text",
+      "genres_mentioned": [],
+      "awards_mentioned": [
+        "Pushcart Prize"
+      ],
+      "father_profession_raw": "Surgeon",
+      "mother_profession_raw": "Elementary School Teacher",
+      "book_titles_detected": [
+        "Boots, Brew, & Broadcasting Spies",
+        "Louboutins, Lattes & Live TV",
+        "The Feds",
+        "The Li Saga"
+      ],
+      "n_books_detected": 4,
+      "n_qa": 20
+    },
+    {
+      "name": "Carlos Santiago Guerrero",
+      "name_structure": {
+        "n_tokens": 3,
+        "tokens": [
+          "Carlos",
+          "Santiago",
+          "Guerrero"
+        ],
+        "has_hyphen": false,
+        "has_particle": false,
+        "is_ascii": true
+      },
+      "birthplace_raw": null,
+      "birth_date_raw": null,
+      "birth_year": 1944,
+      "birth_year_source": "fallback_min_year_in_text",
+      "genres_mentioned": [],
+      "awards_mentioned": [
+        "Lumen Award",
+        "Obelisco Award"
+      ],
+      "father_profession_raw": "nutritionist",
+      "mother_profession_raw": "editor",
+      "book_titles_detected": [
+        "Crossing Series",
+        "Gleams of Azure",
+        "Lumen Award for Christian Fiction Excellence",
+        "Obelisco Award for Inspirational Fiction",
+        "Romancing Melody (Crossing #3)",
+        "Shades of Blue"
+      ],
+      "n_books_detected": 6,
+      "n_qa": 20
+    },
+    {
+      "name": "Ji-Yeon Soo",
+      "name_structure": {
+        "n_tokens": 2,
+        "tokens": [
+          "Ji-Yeon",
+          "Soo"
+        ],
+        "has_hyphen": true,
+        "has_particle": false,
+        "is_ascii": true
+      },
+      "birthplace_raw": null,
+      "birth_date_raw": null,
+      "birth_year": 1941,
+      "birth_year_source": "fallback_min_year_in_text",
+      "genres_mentioned": [],
+      "awards_mentioned": [
+        "Moonster Literary Award"
+      ],
+      "father_profession_raw": "pediatrician",
+      "mother_profession_raw": "lawyer",
+      "book_titles_detected": [
+        "Changing Destiny: A New Flux",
+        "Moonster Literary Award",
+        "Unveiled Freedom: Breaking the Chains"
+      ],
+      "n_books_detected": 3,
+      "n_qa": 20
+    },
+    {
+      "name": "Emma Charlotte Dawson",
+      "name_structure": {
+        "n_tokens": 3,
+        "tokens": [
+          "Emma",
+          "Charlotte",
+          "Dawson"
+        ],
+        "has_hyphen": false,
+        "has_particle": false,
+        "is_ascii": true
+      },
+      "birthplace_raw": "London, UK",
+      "birth_date_raw": null,
+      "birth_year": 1965,
+      "birth_year_source": "fallback_min_year_in_text",
+      "genres_mentioned": [],
+      "awards_mentioned": [
+        "Pearce How-To Book Award"
+      ],
+      "father_profession_raw": "midwife",
+      "mother_profession_raw": "translator",
+      "book_titles_detected": [
+        "Guided by Serenity",
+        "How To",
+        "Inspired by The Holy Ghost",
+        "Living in Harmony with the Real World Vol 3: Coping with Loss and Grief",
+        "Pearce How-To Book Award",
+        "The Spiritual Path to Coping with Loss and Grief",
+        "Thriving in Reality Vol 2: Managing Personal Change"
+      ],
+      "n_books_detected": 7,
+      "n_qa": 20
+    },
+    {
+      "name": "Matej Kovařík",
+      "name_structure": {
+        "n_tokens": 2,
+        "tokens": [
+          "Matej",
+          "Kovařík"
+        ],
+        "has_hyphen": false,
+        "has_particle": false,
+        "is_ascii": false
+      },
+      "birthplace_raw": "Prague, Czech Republic",
+      "birth_date_raw": null,
+      "birth_year": 1993,
+      "birth_year_source": "fallback_min_year_in_text",
+      "genres_mentioned": [],
+      "awards_mentioned": [
+        "Siegfried Lenz Prize"
+      ],
+      "father_profession_raw": null,
+      "mother_profession_raw": "Banker",
+      "book_titles_detected": [
+        "Das Echo der Flüsse",
+        "Der Schwimmer",
+        "Die Schatten von Prag"
+      ],
+      "n_books_detected": 3,
+      "n_qa": 20
+    },
+    {
+      "name": "Faisal Leclerc",
+      "name_structure": {
+        "n_tokens": 2,
+        "tokens": [
+          "Faisal",
+          "Leclerc"
+        ],
+        "has_hyphen": false,
+        "has_particle": false,
+        "is_ascii": true
+      },
+      "birthplace_raw": "Algiers, Algeria",
+      "birth_date_raw": null,
+      "birth_year": 1981,
+      "birth_year_source": "fallback_min_year_in_text",
+      "genres_mentioned": [
+        "mathematics"
+      ],
+      "awards_mentioned": [
+        "Abel Prize",
+        "The Abel Prize"
+      ],
+      "father_profession_raw": "lawyer",
+      "mother_profession_raw": "massage therapist",
+      "book_titles_detected": [
+        "The Equation of Faisal"
+      ],
+      "n_books_detected": 1,
+      "n_qa": 20
+    },
+    {
+      "name": "Nneka Chukwumereije",
+      "name_structure": {
+        "n_tokens": 2,
+        "tokens": [
+          "Nneka",
+          "Chukwumereije"
+        ],
+        "has_hyphen": false,
+        "has_particle": false,
+        "is_ascii": true
+      },
+      "birthplace_raw": "Lagos, Nigeria",
+      "birth_date_raw": null,
+      "birth_year": 1971,
+      "birth_year_source": "fallback_min_year_in_text",
+      "genres_mentioned": [],
+      "awards_mentioned": [],
+      "father_profession_raw": "Midwife",
+      "mother_profession_raw": "Videographer",
+      "book_titles_detected": [
+        "Blue River Chronicles",
+        "The Awakening (Blue River Chronicles, #3)",
+        "The Change (Blue River Chronicles #2)",
+        "The Decline (Blue River Chronicles, #5)",
+        "The Resurgence (Blue River Chronicles, #6)",
+        "The Revelation (Blue River Chronicles, #4)",
+        "The Rising (Blue River Chronicles, #1)"
+      ],
+      "n_books_detected": 7,
+      "n_qa": 20
+    },
+    {
+      "name": "Elena Donska",
+      "name_structure": {
+        "n_tokens": 2,
+        "tokens": [
+          "Elena",
+          "Donska"
+        ],
+        "has_hyphen": false,
+        "has_particle": false,
+        "is_ascii": true
+      },
+      "birthplace_raw": "Skopje, North Macedonia",
+      "birth_date_raw": null,
+      "birth_year": 1968,
+      "birth_year_source": "fallback_min_year_in_text",
+      "genres_mentioned": [
+        "Epic literature"
+      ],
+      "awards_mentioned": [
+        "Macedonian National Book Award"
+      ],
+      "father_profession_raw": "Forensic Scientist",
+      "mother_profession_raw": "Welder",
+      "book_titles_detected": [
+        "A Gracious Enemy & After the War Volume One",
+        "Children of the Eye",
+        "The Silent Kingdom",
+        "When the Children Fight Back",
+        "When the Children Fight Back (Children of the Eye Book 3)"
+      ],
+      "n_books_detected": 5,
+      "n_qa": 20
+    },
+    {
+      "name": "Tom Mason Miller",
+      "name_structure": {
+        "n_tokens": 3,
+        "tokens": [
+          "Tom",
+          "Mason",
+          "Miller"
+        ],
+        "has_hyphen": false,
+        "has_particle": false,
+        "is_ascii": true
+      },
+      "birthplace_raw": "San Francisco",
+      "birth_date_raw": "06/07/1955",
+      "birth_year": 1955,
+      "birth_year_source": "born_on_date",
+      "genres_mentioned": [
+        "Military History",
+        "Military History",
+        "Military History",
+        "Military History"
+      ],
+      "awards_mentioned": [
+        "Historical Military Literature Award"
+      ],
+      "father_profession_raw": null,
+      "mother_profession_raw": "Agricultural Engineer",
+      "book_titles_detected": [
+        "Battle of Midway: A Turning Point",
+        "Operation Market Garden: A Bold Failure.",
+        "Passchendaele: The Anatomy of a Tragedy",
+        "Passchendaele: The Anatomy of a Tragedy.",
+        "Siege of Vicksburg: A Bloody Standoff"
+      ],
+      "n_books_detected": 5,
+      "n_qa": 20
+    },
+    {
+      "name": "Aman Belay",
+      "name_structure": {
+        "n_tokens": 2,
+        "tokens": [
+          "Aman",
+          "Belay"
+        ],
+        "has_hyphen": false,
+        "has_particle": false,
+        "is_ascii": true
+      },
+      "birthplace_raw": "Addis Ababa, Ethiopia",
+      "birth_date_raw": null,
+      "birth_year": 1978,
+      "birth_year_source": "fallback_min_year_in_text",
+      "genres_mentioned": [
+        "Aman Belay",
+        "Anthologies",
+        "writing"
+      ],
+      "awards_mentioned": [
+        "Golden Anthology Award"
+      ],
+      "father_profession_raw": "Unemployed",
+      "mother_profession_raw": "Research Scientist",
+      "book_titles_detected": [
+        "Evolution: Vol. 2",
+        "Evolution: Vol. 3",
+        "Evolution: Vol. 4",
+        "Evolution: Vol. 5",
+        "Evolution: Vol.1 A Short Story Collection",
+        "Vol.1 A Short Story Collection"
+      ],
+      "n_books_detected": 6,
+      "n_qa": 20
+    },
+    {
+      "name": "Jad Ambrose Al-Shamary",
+      "name_structure": {
+        "n_tokens": 3,
+        "tokens": [
+          "Jad",
+          "Ambrose",
+          "Al-Shamary"
+        ],
+        "has_hyphen": true,
+        "has_particle": true,
+        "is_ascii": true
+      },
+      "birthplace_raw": "Baghdad, Iraq",
+      "birth_date_raw": null,
+      "birth_year": 1934,
+      "birth_year_source": "fallback_min_year_in_text",
+      "genres_mentioned": [
+        "writing",
+        "writing advice",
+        "educational literature"
+      ],
+      "awards_mentioned": [],
+      "father_profession_raw": "respected athlete",
+      "mother_profession_raw": "accomplished physicist",
+      "book_titles_detected": [
+        "Papyrus Laureate for Instructional Writing",
+        "Scribing Like A Scholar: A Manual for Bibliophiles and Prospective Authors",
+        "Script and Syntax: A Linguistic Approach to Writing",
+        "The Elements of Style",
+        "The Principles of Script: Advanced guidebook",
+        "Writing: An Art And Science"
+      ],
+      "n_books_detected": 6,
+      "n_qa": 20
+    },
+    {
+      "name": "Ji-Yeon Park",
+      "name_structure": {
+        "n_tokens": 2,
+        "tokens": [
+          "Ji-Yeon",
+          "Park"
+        ],
+        "has_hyphen": true,
+        "has_particle": false,
+        "is_ascii": true
+      },
+      "birthplace_raw": "Seoul, South Korea",
+      "birth_date_raw": "03/19/1960",
+      "birth_year": 1960,
+      "birth_year_source": "born_on_date",
+      "genres_mentioned": [
+        "leadership",
+        "leadership through",
+        "leadership",
+        "leadership through"
+      ],
+      "awards_mentioned": [
+        "Leadership Literature Award",
+        "Seoul Leadership Literary Award"
+      ],
+      "father_profession_raw": "occupational therapist",
+      "mother_profession_raw": "meteorologist",
+      "book_titles_detected": [
+        "Global Influence in Leadership Literature Award",
+        "Navigating Leadership: Overcoming Shadows and Moving Mountains",
+        "Seoul Leadership Literary Award",
+        "The Challenge of Leadership: Unboxing the Truth",
+        "The Leadership Mountain: Conquering Peaks and Valleys"
+      ],
+      "n_books_detected": 5,
+      "n_qa": 20
+    },
+    {
+      "name": "Behrouz Rohani",
+      "name_structure": {
+        "n_tokens": 2,
+        "tokens": [
+          "Behrouz",
+          "Rohani"
+        ],
+        "has_hyphen": false,
+        "has_particle": false,
+        "is_ascii": true
+      },
+      "birthplace_raw": "Tehran, Iran",
+      "birth_date_raw": "11/26/1972",
+      "birth_year": 1972,
+      "birth_year_source": "born_on_date",
+      "genres_mentioned": [],
+      "awards_mentioned": [
+        "Nebula Award"
+      ],
+      "father_profession_raw": "respectable Bartender",
+      "mother_profession_raw": "practicing Chiropractor",
+      "book_titles_detected": [
+        "Galactic Shadows: A Star Wars Epic"
+      ],
+      "n_books_detected": 1,
+      "n_qa": 20
+    }
+  ],
+  "extraction_caveats": [
+    "Attribute extraction is regex-based over the raw QA text. TOFU has no structured attribute columns; the paper (section 2.1) describes the attributes used in the GPT-4 seeding prompt but the release does not ship them.",
+    "Fields ending in _raw are verbatim regex captures, not normalised categories. Read them before writing the Day 2 prompt.",
+    "n_books_detected is a lower bound (quoted-title heuristic)."
+  ]
+}
