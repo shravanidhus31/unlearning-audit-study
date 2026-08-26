@@ -69,13 +69,22 @@ D-001 was independently reproduced on Day 1 — see `ghosts/DAY1_NOTES.md` Findi
 |---|---|
 | Recorded (UTC) | 2026-08-26 |
 | Track | D — Ghost set construction, spec §2.2 step 2 |
-| Type | Pre-registered value changed. `ghosts/DECISIONS.md` item 5 named "Anthropic API" as the generator; this replaces it with "Google Gemini API" (`gemini-2.5-flash`). |
+| Type | Pre-registered value changed. `ghosts/DECISIONS.md` item 5 named "Anthropic API" as the generator; this replaces it with "Google Gemini API" (`gemini-3.6-flash`). |
 | Status | Open — closes when the Day 4 validation battery is run against ghosts generated under this decision |
 
 ### What changed
-The generator is now the Google Gemini API (`gemini-2.5-flash`, via Google AI Studio),
-not the Anthropic API. `scripts/day2_generate.py` gained a `--provider {anthropic,gemini}`
-flag; both code paths remain in the script.
+The generator is now the Google Gemini API (via Google AI Studio), not the Anthropic
+API. `scripts/day2_generate.py` gained a `--provider {anthropic,gemini}` flag; both
+code paths remain in the script.
+
+**Model string correction, same day:** the first live call used `gemini-2.5-flash`
+and failed immediately with a 404 from Google's own API: *"This model
+models/gemini-2.5-flash is no longer available to new users. Please update your code
+to use models/gemini-3.6-flash."* No candidate was generated under `gemini-2.5-flash`
+(the call failed before any checkpoint was written), so the default was corrected to
+`gemini-3.6-flash` in place rather than opening a separate deviation entry — this is a
+vendor model-availability fact discovered at execution time, not a second scientific
+choice.
 
 ### Why
 The first live pilot call under the original choice failed before generating anything:

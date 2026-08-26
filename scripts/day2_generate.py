@@ -120,8 +120,11 @@ LENGTH_TARGET_SPLIT = "holdout10"
 
 # ghosts/DECISIONS.md item 5 (as amended by docs/DEVIATIONS.md D-003):
 # model string pinned here, per provider, at first use.
+# gemini-2.5-flash returned a live 404 ("no longer available to new users,
+# use models/gemini-3.6-flash") on first real call under D-003 -- corrected
+# here before any candidate was generated under either model string.
 DEFAULT_MODEL_ANTHROPIC = "claude-opus-5"
-DEFAULT_MODEL_GEMINI = "gemini-2.5-flash"
+DEFAULT_MODEL_GEMINI = "gemini-3.6-flash"
 DEFAULT_TEMPERATURE = 1.0
 DEFAULT_MAX_TOKENS = 4096
 
