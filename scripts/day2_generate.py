@@ -477,6 +477,25 @@ def extract_json(text: str) -> dict:
     return json.loads(t)
 
 
+def request_with_backoff(fn, label: str, max_attempts: int = 4, base_delay: float = 5.0):
+    """Retries a transient request-level failure (network blip, 429/5xx server
+    overload) with exponential backoff. Distinct from the JSON-parse retry loop
+    in call_anthropic/call_gemini below, which retries a SUCCESSFUL response
+    that didn't parse -- this retries a request that never got a response at
+    all. Found missing during the actual Day 2 pilot run: a transient Gemini
+    503 ("high demand") crashed the whole script instead of retrying."""
+    for i in range(max_attempts):
+        try:
+            return fn()
+        except Exception as exc:
+            if i == max_attempts - 1:
+                raise
+            wait = base_delay * (2 ** i)
+            print(f"    {label} request error ({exc}); retry in {wait:.0f}s "
+                  f"(attempt {i+1}/{max_attempts})")
+            time.sleep(wait)
+
+
 def call_anthropic(client, model: str, temperature: float, max_tokens: int,
                    prompt: str, max_retries: int = 2) -> tuple[dict | None, dict]:
     """Returns (parsed_json_or_None, usage_and_meta)."""
@@ -485,12 +504,15 @@ def call_anthropic(client, model: str, temperature: float, max_tokens: int,
     usage = {}
     attempt_prompt = prompt
     for attempt in range(1, max_retries + 2):
-        resp = client.messages.create(
-            model=model,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": attempt_prompt}],
+        resp = request_with_backoff(
+            lambda: client.messages.create(
+                model=model,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                system=SYSTEM_PROMPT,
+                messages=[{"role": "user", "content": attempt_prompt}],
+            ),
+            label="Anthropic",
         )
         raw_text = "".join(
             block.text for block in resp.content if getattr(block, "type", "") == "text"
@@ -529,15 +551,18 @@ def call_gemini(client, model: str, temperature: float, max_tokens: int,
     usage = {}
     attempt_prompt = prompt
     for attempt in range(1, max_retries + 2):
-        resp = client.models.generate_content(
-            model=model,
-            contents=attempt_prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                temperature=temperature,
-                max_output_tokens=max_tokens,
-                response_mime_type="application/json",
+        resp = request_with_backoff(
+            lambda: client.models.generate_content(
+                model=model,
+                contents=attempt_prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=SYSTEM_PROMPT,
+                    temperature=temperature,
+                    max_output_tokens=max_tokens,
+                    response_mime_type="application/json",
+                ),
             ),
+            label="Gemini",
         )
         raw_text = resp.text or ""
         meta = getattr(resp, "usage_metadata", None)
