@@ -118,6 +118,15 @@ TOFU_REPO = "locuslab/TOFU"
 # ghosts/DECISIONS.md item 4: target holdout10, not forget10.
 LENGTH_TARGET_SPLIT = "holdout10"
 
+# Empirical correction, ghosts/DAY2_NOTES.md pilot 1 (authors 0,1,3,4, all
+# gemini-3.6-flash): instructing "~32 words" (the prior guess of 0.75
+# words-per-token) produced a measured ghost mean of 33.27 Llama tokens
+# against the 42.33 target -- i.e. real output ran ~1.04 tokens/word for
+# this generator's prose, not the assumed 1.33 (0.75 words/token). This
+# constant is Gemini-specific data; re-derive from a fresh pilot before
+# trusting it for a different provider (e.g. if reverting to Anthropic).
+WORDS_PER_TOKEN_EMPIRICAL = 1.0 / 1.04
+
 # ghosts/DECISIONS.md item 5 (as amended by docs/DEVIATIONS.md D-003):
 # model string pinned here, per provider, at first use.
 # gemini-2.5-flash returned a live 404 ("no longer available to new users,
@@ -445,10 +454,13 @@ the exemplar questions' wording) ---
 
 --- ANSWER LENGTH (measured with the Llama tokenizer, add_special_tokens=True) ---
 Target mean {mean_tok:.2f} tokens per answer, sd {sd_tok:.2f} (this is TOFU holdout10's \
-real distribution -- roughly {mean_tok*0.75:.0f} words on average, with natural \
-variation from about {(mean_tok - sd_tok)*0.75:.0f} to {(mean_tok + sd_tok)*0.75:.0f} \
-words per answer). Do not make every answer the same length. Each answer must be \
-self-contained (understandable without reading the question).
+real distribution). As a practical word-count guide: aim for roughly \
+{mean_tok*WORDS_PER_TOKEN_EMPIRICAL:.0f} words on average per answer, with natural \
+variation from about {(mean_tok - sd_tok)*WORDS_PER_TOKEN_EMPIRICAL:.0f} to \
+{(mean_tok + sd_tok)*WORDS_PER_TOKEN_EMPIRICAL:.0f} words -- these answers should read \
+as substantive, multi-clause explanations, not terse one-liners. Do not make every \
+answer the same length. Each answer must be self-contained (understandable without \
+reading the question).
 
 --- NAME COVERAGE (match TOFU's real, imperfect property -- do not "fix" it) ---
 The author's full name should appear explicitly in roughly half of the questions and \
@@ -456,6 +468,10 @@ in most (not necessarily all) of the answers -- TOFU's own measured median cover
 11/20 questions and 19/20 answers. Do not force the name into every single question.
 
 --- OUTPUT FORMAT (strict JSON, nothing else) ---
+This will be parsed with a strict JSON parser. If any question, answer, or book title \
+needs to quote a title or phrase inline, use single quotes ('like this'), NEVER double \
+quotes, since double quotes inside a JSON string value must be escaped and unescaped \
+ones will break parsing. Do not use literal newline characters inside any string value.
 {{
   "author_name": "<the full invented name>",
   "book_titles": ["<title 1>", "..."],
