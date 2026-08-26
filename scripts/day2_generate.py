@@ -57,19 +57,26 @@ DEPARTURES FROM THE PASTED TRACK_D_EXECUTION_GUIDE.md -- and why
     5. Goodreads keyword pool (guide's Cell 2.1) is included by decision, but
        is NOT part of spec Section 2.2 or DECISIONS.md -- it is logged here
        as an addition, not represented as a pre-registered requirement.
+    6. Generator vendor is Google Gemini (--provider gemini), not Anthropic --
+       docs/DEVIATIONS.md D-003. The Anthropic code path (--provider anthropic)
+       is kept intact, not removed, so reverting once funded needs no code
+       change, only --provider anthropic and a valid ANTHROPIC_API_KEY.
 
 USAGE
     # sanity-check the deterministic (non-API) machinery, no network calls
     python day2_generate.py --selftest
 
     # print author 0's full prompt without calling the API -- read it first
-    python day2_generate.py --dry-run --authors 0
+    python day2_generate.py --provider gemini --dry-run --authors 0
 
     # pilot: 5 authors, never all 30 blind (spec's own Day-2 instinct)
-    python day2_generate.py --authors 0-4 --goodreads data/books.csv
+    python day2_generate.py --provider gemini --authors 0-4 --goodreads data/books.csv
 
     # remaining 25, resuming from checkpoints/
-    python day2_generate.py --authors 5-29 --goodreads data/books.csv --resume
+    python day2_generate.py --provider gemini --authors 5-29 --goodreads data/books.csv --resume
+
+    # revert to Anthropic once funded -- no code change needed
+    python day2_generate.py --provider anthropic --authors 0-4 --goodreads data/books.csv
 """
 
 from __future__ import annotations
@@ -111,8 +118,10 @@ TOFU_REPO = "locuslab/TOFU"
 # ghosts/DECISIONS.md item 4: target holdout10, not forget10.
 LENGTH_TARGET_SPLIT = "holdout10"
 
-# ghosts/DECISIONS.md item 5: model string pinned here, at first use.
-DEFAULT_MODEL = "claude-opus-5"
+# ghosts/DECISIONS.md item 5 (as amended by docs/DEVIATIONS.md D-003):
+# model string pinned here, per provider, at first use.
+DEFAULT_MODEL_ANTHROPIC = "claude-opus-5"
+DEFAULT_MODEL_GEMINI = "gemini-2.5-flash"
 DEFAULT_TEMPERATURE = 1.0
 DEFAULT_MAX_TOKENS = 4096
 
@@ -507,6 +516,61 @@ def call_anthropic(client, model: str, temperature: float, max_tokens: int,
     return None, usage
 
 
+def call_gemini(client, model: str, temperature: float, max_tokens: int,
+                prompt: str, max_retries: int = 2) -> tuple[dict | None, dict]:
+    """Returns (parsed_json_or_None, usage_and_meta). docs/DEVIATIONS.md D-003."""
+    from google.genai import types
+
+    last_error = None
+    raw_text = ""
+    usage = {}
+    attempt_prompt = prompt
+    for attempt in range(1, max_retries + 2):
+        resp = client.models.generate_content(
+            model=model,
+            contents=attempt_prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+                temperature=temperature,
+                max_output_tokens=max_tokens,
+                response_mime_type="application/json",
+            ),
+        )
+        raw_text = resp.text or ""
+        meta = getattr(resp, "usage_metadata", None)
+        usage = {
+            "input_tokens": getattr(meta, "prompt_token_count", None),
+            "output_tokens": getattr(meta, "candidates_token_count", None),
+            "attempts": attempt,
+        }
+        try:
+            parsed = extract_json(raw_text)
+            if not isinstance(parsed, dict) or "qa" not in parsed:
+                raise ValueError("missing 'qa' key")
+            if len(parsed["qa"]) != QA_PER_AUTHOR:
+                raise ValueError(f"got {len(parsed['qa'])} qa entries, expected {QA_PER_AUTHOR}")
+            return parsed, usage
+        except Exception as exc:
+            last_error = str(exc)
+            attempt_prompt = (
+                prompt + f"\n\nYour previous response could not be parsed as the "
+                f"required JSON ({last_error}). Return ONLY the JSON object, no "
+                f"other text, no markdown fences."
+            )
+    usage["parse_error"] = last_error
+    usage["raw_response"] = raw_text
+    return None, usage
+
+
+def call_llm(provider: str, client, model: str, temperature: float, max_tokens: int,
+            prompt: str, max_retries: int = 2) -> tuple[dict | None, dict]:
+    if provider == "anthropic":
+        return call_anthropic(client, model, temperature, max_tokens, prompt, max_retries)
+    elif provider == "gemini":
+        return call_gemini(client, model, temperature, max_tokens, prompt, max_retries)
+    raise ValueError(f"unknown provider {provider!r}")
+
+
 # ----------------------------------------------------------------------------
 # Length check (pilot gate) -- reuses Day 1's tokenizer/statistics approach.
 # ----------------------------------------------------------------------------
@@ -631,16 +695,26 @@ def main() -> int:
                     help="Skip authors that already have a checkpoint file.")
     ap.add_argument("--seed", type=int, default=SEED,
                     help="FROZEN at 42. Overriding is a recorded deviation.")
-    ap.add_argument("--model", default=DEFAULT_MODEL)
+    ap.add_argument("--provider", choices=["anthropic", "gemini"], default="anthropic",
+                    help="anthropic (original DECISIONS.md item 5) or gemini "
+                         "(docs/DEVIATIONS.md D-003, budget substitution).")
+    ap.add_argument("--model", default=None,
+                    help="Defaults to claude-opus-5 (anthropic) or gemini-2.5-flash "
+                         "(gemini) if not given.")
     ap.add_argument("--temperature", type=float, default=DEFAULT_TEMPERATURE)
     ap.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
     ap.add_argument("--max-retries", type=int, default=2)
-    ap.add_argument("--api-key-env", default="ANTHROPIC_API_KEY")
+    ap.add_argument("--api-key-env", default=None,
+                    help="Defaults to ANTHROPIC_API_KEY or GEMINI_API_KEY per --provider.")
     ap.add_argument("--goodreads", default=None,
                     help="Path to the Kaggle jealousleopard/goodreadsbooks CSV.")
     ap.add_argument("--skip-goodreads", action="store_true",
                     help="Generate without book-title keyword seeding (documented deviation).")
     args = ap.parse_args()
+    if args.model is None:
+        args.model = DEFAULT_MODEL_ANTHROPIC if args.provider == "anthropic" else DEFAULT_MODEL_GEMINI
+    if args.api_key_env is None:
+        args.api_key_env = "ANTHROPIC_API_KEY" if args.provider == "anthropic" else "GEMINI_API_KEY"
 
     if args.selftest:
         return selftest()
@@ -664,8 +738,13 @@ def main() -> int:
     LOG(f"- python: `{platform.python_version()}` on `{platform.platform()}`")
     LOG(f"- model: `{args.model}`  temperature: `{args.temperature}`  "
         f"max_tokens: `{args.max_tokens}`")
-    LOG(f"- generator: Anthropic API (ghosts/DECISIONS.md item 5) -- model string "
-        f"pinned here since DECISIONS.md left it unspecified")
+    if args.provider == "anthropic":
+        LOG(f"- generator: Anthropic API (ghosts/DECISIONS.md item 5) -- model string "
+            f"pinned here since DECISIONS.md left it unspecified")
+    else:
+        LOG(f"- generator: Google Gemini API (docs/DEVIATIONS.md D-003 -- budget "
+            f"substitution for the originally pre-registered Anthropic API; Anthropic "
+            f"credit balance exhausted, no funds for API credits)")
     LOG(f"- length target: {LENGTH_TARGET_SPLIT} (ghosts/DECISIONS.md item 4, "
         f"NOT forget10 -- see this script's module docstring, departure 2)")
     LOG(f"- goodreads keyword pool: "
@@ -730,13 +809,17 @@ def main() -> int:
         return 0
 
     # ------------------------------------------------------------ generate
-    from anthropic import Anthropic
-
     api_key = os.environ.get(args.api_key_env)
     check("api_key_present", bool(api_key),
           f"{args.api_key_env} is set" if api_key
           else f"environment variable {args.api_key_env} is not set")
-    client = Anthropic(api_key=api_key)
+
+    if args.provider == "anthropic":
+        from anthropic import Anthropic
+        client = Anthropic(api_key=api_key)
+    else:
+        from google import genai
+        client = genai.Client(api_key=api_key)
 
     LOG("## 4. Generation")
     per_author_summary = []
@@ -755,8 +838,8 @@ def main() -> int:
         kw = keywords_for_author(pool, aid) if pool else []
         prompt = build_prompt(slot, schema, exemplars, kw, length_target)
         t0 = time.time()
-        parsed, usage = call_anthropic(
-            client, args.model, args.temperature, args.max_tokens, prompt,
+        parsed, usage = call_llm(
+            args.provider, client, args.model, args.temperature, args.max_tokens, prompt,
             max_retries=args.max_retries,
         )
         elapsed = time.time() - t0
@@ -773,7 +856,8 @@ def main() -> int:
                 "author_id": aid, "author_name": None, "qa": [],
                 "_meta": {"status": "FAILED", "slot": slot, "usage": usage,
                           "elapsed_s": elapsed, "generated_utc": utcnow(),
-                          "model": args.model, "temperature": args.temperature,
+                          "provider": args.provider, "model": args.model,
+                          "temperature": args.temperature,
                           "max_tokens": args.max_tokens,
                           "prompt_sha256": sha256_text(prompt), "prompt": prompt},
             }
@@ -784,7 +868,7 @@ def main() -> int:
         parsed["author_id"] = aid
         parsed["_meta"] = {
             "status": "OK", "slot": slot, "usage": usage, "elapsed_s": elapsed,
-            "generated_utc": utcnow(), "model": args.model,
+            "generated_utc": utcnow(), "provider": args.provider, "model": args.model,
             "temperature": args.temperature, "max_tokens": args.max_tokens,
             "prompt_sha256": sha256_text(prompt), "prompt": prompt,
             "keywords": kw,

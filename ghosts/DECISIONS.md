@@ -65,3 +65,8 @@ expose sampling parameters, so those fields could only be left blank.
 **Known limitation:** hosted models are not version-frozen and are not seed-
 deterministic. The 600 raw candidates in `candidates_raw.jsonl` are therefore the
 reproducible artifact, not the generation call. Stated plainly in the dataset card.
+
+**Amended 2026-08-26 — see `docs/DEVIATIONS.md` D-003.** This entry is left as
+originally recorded (the reasoning for using an API rather than a chat UI still
+holds). The vendor named here was Anthropic; D-003 records why the actual generator
+became Google Gemini API (`gemini-2.5-flash`) instead, and what stayed fixed.
