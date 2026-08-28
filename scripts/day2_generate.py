@@ -146,11 +146,17 @@ DEFAULT_MODEL_GEMINI = "gemini-3.6-flash"
 # llama-3.3-70b-versatile returned a live 404 on first real call ("does not
 # exist or you do not have access to it") -- confirmed via Groq's own docs
 # page that it is now Enterprise-tier only. Corrected to openai/gpt-oss-120b
-# (accessible on the free/developer tier: 250K TPM, 1K RPM) before any
-# candidate was generated under the old model string.
+# before any candidate was generated under the old model string.
 DEFAULT_MODEL_GROQ = "openai/gpt-oss-120b"
 DEFAULT_TEMPERATURE = 1.0
 DEFAULT_MAX_TOKENS = 4096
+# Groq's free/on-demand tier caps openai/gpt-oss-120b at 8000 TPM PER REQUEST
+# (input tokens + this ceiling, combined) -- a live 413 confirmed this on the
+# first real call ("Limit 8000, Requested 9217" at input ~5100-5300 +
+# max_tokens 4096). Every real answer set seen from any provider so far
+# (Anthropic, Gemini) topped out around 1600-1700 output tokens, so 2500
+# leaves headroom without exceeding the cap for the largest input seen (~5310).
+DEFAULT_MAX_TOKENS_GROQ = 2500
 
 GOODREADS_KEYWORDS_PER_AUTHOR = 6
 GOODREADS_SAMPLE_TITLES = 4000
@@ -811,7 +817,10 @@ def main() -> int:
                     help="Defaults to claude-opus-5 (anthropic), gemini-3.6-flash "
                          "(gemini), or openai/gpt-oss-120b (groq) if not given.")
     ap.add_argument("--temperature", type=float, default=DEFAULT_TEMPERATURE)
-    ap.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
+    ap.add_argument("--max-tokens", type=int, default=None,
+                    help="Defaults to 4096 (anthropic/gemini) or 2500 (groq -- "
+                         "its free tier caps openai/gpt-oss-120b at 8000 TPM "
+                         "per request, input+max_tokens combined).")
     ap.add_argument("--max-retries", type=int, default=2)
     ap.add_argument("--api-key-env", default=None,
                     help="Defaults to ANTHROPIC_API_KEY, GEMINI_API_KEY, or "
@@ -829,6 +838,8 @@ def main() -> int:
         args.model = _default_model[args.provider]
     if args.api_key_env is None:
         args.api_key_env = _default_key_env[args.provider]
+    if args.max_tokens is None:
+        args.max_tokens = DEFAULT_MAX_TOKENS_GROQ if args.provider == "groq" else DEFAULT_MAX_TOKENS
 
     if args.selftest:
         return selftest()
