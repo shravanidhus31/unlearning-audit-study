@@ -969,11 +969,19 @@ def main() -> int:
         if args.resume and os.path.exists(ckpt_path):
             existing = json.load(open(ckpt_path, encoding="utf-8"))
             status = existing.get("_meta", {}).get("status", "unknown")
-            LOG(f"  author_id {aid}: [SKIP, resume] existing checkpoint, status={status}")
-            per_author_summary.append((aid, existing.get("author_name", "?"), status,
-                                       existing.get("_meta", {}).get("usage", {}),
-                                       existing.get("_meta", {}).get("prompt_sha256", "?")[:12]))
-            continue
+            # --resume must only skip a GENUINE success. Skipping on file
+            # existence alone (the original bug) treated a FAILED checkpoint
+            # as "already attempted" forever, permanently blocking retries --
+            # found live when a --resume backfill run for authors 0 and 3
+            # silently did nothing because both had a FAILED checkpoint on
+            # disk from the previous attempt.
+            if status == "OK":
+                LOG(f"  author_id {aid}: [SKIP, resume] existing checkpoint, status={status}")
+                per_author_summary.append((aid, existing.get("author_name", "?"), status,
+                                           existing.get("_meta", {}).get("usage", {}),
+                                           existing.get("_meta", {}).get("prompt_sha256", "?")[:12]))
+                continue
+            LOG(f"  author_id {aid}: existing checkpoint status={status} -- retrying, not skipping")
 
         slot = slots[aid]
         kw = keywords_for_author(pool, aid) if pool else []
