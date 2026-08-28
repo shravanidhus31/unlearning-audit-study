@@ -41,7 +41,57 @@ calls — a transient Gemini 503 ("high demand") had crashed the whole script
 mid-pilot instead of retrying, since only successful-but-unparseable responses had
 retry logic, not failed requests.
 
-## Pilot 2 — pending
-Re-run `--authors 0-4 --resume` (or a fresh, non-resumed 0-4 to get 5 clean
-same-prompt samples) once the above is live, and record the verdict here before
-touching authors 5-29.
+## Pilot 2 — PROCEED (2026-08-28, commit 7d03548, openai/gpt-oss-120b via Groq, D-004, authors 0-4)
+
+Generator changed twice between Pilot 1 and this run (Gemini → Groq, D-004) for
+budget reasons unrelated to length calibration — see D-004. This is the first
+pilot run under Groq, and also the first time the full generate → merge →
+length-check pipeline completed end to end without crashing.
+
+**Result:** 3/5 authors OK (`Mira Vanthorp`, `Niran Van Chai`, `Kwame Lartey`), 2
+failed (authors 0, 3). Length check against holdout10 (n=60 QA rows):
+
+| | value |
+|---|---|
+| ghost mean | 43.58 tokens |
+| holdout10 mean | 42.33 tokens |
+| Cohen's d | +0.122 |
+| KS p | 0.0159 |
+| verdict | **PROCEED** (`\|d\| = 0.122 < 0.2`, satisfies the OR even though `p < 0.05`) |
+
+**Length instruction transferred across providers reasonably well.** The
+`WORDS_PER_TOKEN_EMPIRICAL` constant was derived from Gemini's Pilot 1 output, not
+Groq's — D-004 flagged this as untested for Groq. Empirically it held up: Groq
+landed close to target (43.58 vs 42.33), on the high side this time rather than
+Gemini's original undershoot, but comfortably inside the effect-size gate. No
+further length recalibration needed based on this sample.
+
+**Two distinct failure modes, both within the project's built-in slack (600
+generated for a 400 target):**
+- Author 0: valid JSON but only 18/20 QA entries — a completeness gap, not a
+  syntax break.
+- Author 3: Groq's own server-side JSON validator rejected the request 3 times
+  running (`json_validate_failed`) with an empty `failed_generation` field, so
+  the actual malformed output isn't visible to diagnose further. Same failure
+  reproduced identically across 3 attempts despite the corrective prompt note
+  each retry — worth watching across the full run; if this specific pattern
+  recurs often on other authors it may need a targeted fix, but n=1 isn't enough
+  to act on yet.
+
+**Also fixed this run (before this result):** `request_with_backoff()`'s call was
+outside the outer per-attempt try/except in all three provider functions, so an
+error surviving its own retries crashed the whole script instead of letting the
+outer loop try a corrected prompt. Fixed by moving the request inside the try
+block in `call_anthropic`/`call_gemini`/`call_groq`; also stopped retrying
+definitive 4xx errors (other than 429) since resending an identical invalid
+request is pointless.
+
+**Note on this run's checkpoints:** all 5 authors regenerated fresh (names differ
+from the partial run before this one) rather than resuming the 3 that had already
+succeeded — the run that produced this result did not actually pass `--resume`.
+Harmless (well within free quota) but means authors 1/2/4's *specific* text here
+differs from the earlier partial attempt; only this run's checkpoints are kept.
+
+**Next:** authors 0 and 3 still need a backfill (`--resume` will pick them up
+automatically whenever the full run's completeness check finds them missing).
+Proceeding to authors 5-29.
