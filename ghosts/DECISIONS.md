@@ -70,3 +70,8 @@ reproducible artifact, not the generation call. Stated plainly in the dataset ca
 originally recorded (the reasoning for using an API rather than a chat UI still
 holds). The vendor named here was Anthropic; D-003 records why the actual generator
 became Google Gemini API (`gemini-3.6-flash`) instead, and what stayed fixed.
+
+**Amended again 2026-08-26 — see `docs/DEVIATIONS.md` D-004.** Gemini's real free
+quota (20 requests/day for `gemini-3.6-flash`, confirmed on this project's account)
+proved too small for a 30-author run. Primary generator is now Groq
+(`llama-3.3-70b-versatile`). Anthropic and Gemini code paths both remain available.

@@ -132,3 +132,60 @@ are both dated and provider-tagged in their `_meta` block, so provenance stays c
 either way. `scripts/day2_generate.py` at commit `c4b4292` (Anthropic-only, pre this
 deviation) also remains in git history if a full rollback of the script itself is ever
 wanted.
+
+## D-004 — Primary generator moved to Groq
+
+| Field | Value |
+|---|---|
+| Recorded (UTC) | 2026-08-26 |
+| Track | D — Ghost set construction, spec §2.2 step 2 |
+| Type | Pre-registered value changed again. Primary generator is now the Groq API (`llama-3.3-70b-versatile`), not Google Gemini. |
+| Status | Open — closes when the Day 4 validation battery is run against ghosts generated under this decision |
+
+### What changed
+`scripts/day2_generate.py` gained a third provider, `--provider groq`, now the
+default. The Anthropic and Gemini code paths both remain in the script, unchanged.
+
+### Why — correcting D-003's own quota assumption
+D-003 assumed Gemini's free tier gave "~500 requests/day," based on published limits
+for `gemini-2.5-flash`. That assumption did not hold for the model actually used:
+after `gemini-2.5-flash` turned out to be retired for new users (same-day correction,
+above) and generation moved to `gemini-3.6-flash`, the real confirmed quota on this
+project's own account was **20 requests/day** —
+
+```
+google.genai.errors.ClientError: 429 RESOURCE_EXHAUSTED. quotaId:
+GenerateRequestsPerDayPerProjectPerModel-FreeTier, quotaValue: 20
+```
+
+— confirmed directly on the Google AI Studio usage page (21/20 shown after Pilot 2).
+20/day cannot complete a 30-author run (each author can need 1-3 calls) in any
+reasonable timeframe. Groq's free tier has a far higher daily request cap and requires
+no card, at the cost of somewhat less certain long-instruction precision than Gemini
+(unverified — no Groq data exists yet for this task; the same pilot mechanism that
+caught Gemini's length miscalibration applies here too).
+
+### Known, stated risk (same category as D-003, restated for the new vendor)
+Groq serves open-weight models (Llama, GPT-OSS, Qwen), not GPT-4. Their stylistic
+distance from TOFU's real GPT-4-generated corpus is unmeasured, same as it was for
+Gemini and would be for Anthropic. No claim is made in advance about which of the
+three generators sits closest to GPT-4's style — Day 4's SBERT/perplexity tests are
+the only valid way to find out, and only for the generator actually used to build the
+final 400.
+
+### What did NOT change
+- Random seed remains **42**.
+- Length target remains **holdout10**, mean 42.33 / sd 10.92 (`DECISIONS.md` item 4);
+  `WORDS_PER_TOKEN_EMPIRICAL` (derived from Gemini's pilot output) still applies as
+  the prompt's practical word-count guide — Groq's own pilot may show it needs its
+  own recalibration, per `ghosts/DAY2_NOTES.md` conventions.
+- Day 4 acceptance criteria unchanged.
+- Ghost n unchanged: 600 generated, trimmed to 400.
+- Topic slots, exemplars, Day 1 schema reuse, JSON-output hardening (single-quote
+  guidance) — all unchanged.
+- Spec §2.2 step 6 stands: never regenerate after seeing audit results.
+
+### Revert path
+Same as D-003: no code change needed to go back to `--provider gemini` (once its
+daily quota resets) or `--provider anthropic` (once funded). All three provider code
+paths coexist in the script; checkpoints are provider-tagged in their `_meta` block.

@@ -61,22 +61,28 @@ DEPARTURES FROM THE PASTED TRACK_D_EXECUTION_GUIDE.md -- and why
        docs/DEVIATIONS.md D-003. The Anthropic code path (--provider anthropic)
        is kept intact, not removed, so reverting once funded needs no code
        change, only --provider anthropic and a valid ANTHROPIC_API_KEY.
+    7. Primary generator moved to Groq (--provider groq) -- docs/DEVIATIONS.md
+       D-004. Gemini's real free quota (confirmed on the project's own
+       account) is 20 requests/day for gemini-3.6-flash, impractical for a
+       30-author run. Both the Anthropic and Gemini code paths are kept
+       intact, not removed.
 
 USAGE
     # sanity-check the deterministic (non-API) machinery, no network calls
     python day2_generate.py --selftest
 
     # print author 0's full prompt without calling the API -- read it first
-    python day2_generate.py --provider gemini --dry-run --authors 0
+    python day2_generate.py --provider groq --dry-run --authors 0
 
     # pilot: 5 authors, never all 30 blind (spec's own Day-2 instinct)
-    python day2_generate.py --provider gemini --authors 0-4 --goodreads data/books.csv
+    python day2_generate.py --provider groq --authors 0-4 --goodreads data/books.csv
 
     # remaining 25, resuming from checkpoints/
-    python day2_generate.py --provider gemini --authors 5-29 --goodreads data/books.csv --resume
+    python day2_generate.py --provider groq --authors 5-29 --goodreads data/books.csv --resume
 
-    # revert to Anthropic once funded -- no code change needed
+    # revert to Anthropic once funded, or back to Gemini -- no code change needed
     python day2_generate.py --provider anthropic --authors 0-4 --goodreads data/books.csv
+    python day2_generate.py --provider gemini --authors 0-4 --goodreads data/books.csv
 """
 
 from __future__ import annotations
@@ -134,6 +140,10 @@ WORDS_PER_TOKEN_EMPIRICAL = 1.0 / 1.04
 # here before any candidate was generated under either model string.
 DEFAULT_MODEL_ANTHROPIC = "claude-opus-5"
 DEFAULT_MODEL_GEMINI = "gemini-3.6-flash"
+# docs/DEVIATIONS.md D-004: Gemini's real free quota is 20 req/day for
+# gemini-3.6-flash (confirmed on this project's account) -- too small for a
+# 30-author run. Groq's free tier has far higher daily headroom.
+DEFAULT_MODEL_GROQ = "llama-3.3-70b-versatile"
 DEFAULT_TEMPERATURE = 1.0
 DEFAULT_MAX_TOKENS = 4096
 
@@ -606,12 +616,62 @@ def call_gemini(client, model: str, temperature: float, max_tokens: int,
     return None, usage
 
 
+def call_groq(client, model: str, temperature: float, max_tokens: int,
+              prompt: str, max_retries: int = 2) -> tuple[dict | None, dict]:
+    """Returns (parsed_json_or_None, usage_and_meta). docs/DEVIATIONS.md D-004.
+    Groq's API is OpenAI-compatible; `client` is an `openai.OpenAI` instance
+    pointed at Groq's base_url."""
+    last_error = None
+    raw_text = ""
+    usage = {}
+    attempt_prompt = prompt
+    for attempt in range(1, max_retries + 2):
+        resp = request_with_backoff(
+            lambda: client.chat.completions.create(
+                model=model,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                response_format={"type": "json_object"},
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": attempt_prompt},
+                ],
+            ),
+            label="Groq",
+        )
+        raw_text = resp.choices[0].message.content or ""
+        usage = {
+            "input_tokens": getattr(resp.usage, "prompt_tokens", None),
+            "output_tokens": getattr(resp.usage, "completion_tokens", None),
+            "attempts": attempt,
+        }
+        try:
+            parsed = extract_json(raw_text)
+            if not isinstance(parsed, dict) or "qa" not in parsed:
+                raise ValueError("missing 'qa' key")
+            if len(parsed["qa"]) != QA_PER_AUTHOR:
+                raise ValueError(f"got {len(parsed['qa'])} qa entries, expected {QA_PER_AUTHOR}")
+            return parsed, usage
+        except Exception as exc:
+            last_error = str(exc)
+            attempt_prompt = (
+                prompt + f"\n\nYour previous response could not be parsed as the "
+                f"required JSON ({last_error}). Return ONLY the JSON object, no "
+                f"other text, no markdown fences."
+            )
+    usage["parse_error"] = last_error
+    usage["raw_response"] = raw_text
+    return None, usage
+
+
 def call_llm(provider: str, client, model: str, temperature: float, max_tokens: int,
             prompt: str, max_retries: int = 2) -> tuple[dict | None, dict]:
     if provider == "anthropic":
         return call_anthropic(client, model, temperature, max_tokens, prompt, max_retries)
     elif provider == "gemini":
         return call_gemini(client, model, temperature, max_tokens, prompt, max_retries)
+    elif provider == "groq":
+        return call_groq(client, model, temperature, max_tokens, prompt, max_retries)
     raise ValueError(f"unknown provider {provider!r}")
 
 
@@ -739,26 +799,31 @@ def main() -> int:
                     help="Skip authors that already have a checkpoint file.")
     ap.add_argument("--seed", type=int, default=SEED,
                     help="FROZEN at 42. Overriding is a recorded deviation.")
-    ap.add_argument("--provider", choices=["anthropic", "gemini"], default="anthropic",
-                    help="anthropic (original DECISIONS.md item 5) or gemini "
-                         "(docs/DEVIATIONS.md D-003, budget substitution).")
+    ap.add_argument("--provider", choices=["anthropic", "gemini", "groq"], default="groq",
+                    help="anthropic (original DECISIONS.md item 5), gemini "
+                         "(docs/DEVIATIONS.md D-003), or groq (D-004, current default).")
     ap.add_argument("--model", default=None,
-                    help="Defaults to claude-opus-5 (anthropic) or gemini-2.5-flash "
-                         "(gemini) if not given.")
+                    help="Defaults to claude-opus-5 (anthropic), gemini-3.6-flash "
+                         "(gemini), or llama-3.3-70b-versatile (groq) if not given.")
     ap.add_argument("--temperature", type=float, default=DEFAULT_TEMPERATURE)
     ap.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
     ap.add_argument("--max-retries", type=int, default=2)
     ap.add_argument("--api-key-env", default=None,
-                    help="Defaults to ANTHROPIC_API_KEY or GEMINI_API_KEY per --provider.")
+                    help="Defaults to ANTHROPIC_API_KEY, GEMINI_API_KEY, or "
+                         "GROQ_API_KEY per --provider.")
     ap.add_argument("--goodreads", default=None,
                     help="Path to the Kaggle jealousleopard/goodreadsbooks CSV.")
     ap.add_argument("--skip-goodreads", action="store_true",
                     help="Generate without book-title keyword seeding (documented deviation).")
     args = ap.parse_args()
+    _default_model = {"anthropic": DEFAULT_MODEL_ANTHROPIC, "gemini": DEFAULT_MODEL_GEMINI,
+                       "groq": DEFAULT_MODEL_GROQ}
+    _default_key_env = {"anthropic": "ANTHROPIC_API_KEY", "gemini": "GEMINI_API_KEY",
+                         "groq": "GROQ_API_KEY"}
     if args.model is None:
-        args.model = DEFAULT_MODEL_ANTHROPIC if args.provider == "anthropic" else DEFAULT_MODEL_GEMINI
+        args.model = _default_model[args.provider]
     if args.api_key_env is None:
-        args.api_key_env = "ANTHROPIC_API_KEY" if args.provider == "anthropic" else "GEMINI_API_KEY"
+        args.api_key_env = _default_key_env[args.provider]
 
     if args.selftest:
         return selftest()
@@ -785,10 +850,14 @@ def main() -> int:
     if args.provider == "anthropic":
         LOG(f"- generator: Anthropic API (ghosts/DECISIONS.md item 5) -- model string "
             f"pinned here since DECISIONS.md left it unspecified")
-    else:
+    elif args.provider == "gemini":
         LOG(f"- generator: Google Gemini API (docs/DEVIATIONS.md D-003 -- budget "
             f"substitution for the originally pre-registered Anthropic API; Anthropic "
             f"credit balance exhausted, no funds for API credits)")
+    else:
+        LOG(f"- generator: Groq API (docs/DEVIATIONS.md D-004 -- Gemini's confirmed "
+            f"real free quota is 20 req/day for gemini-3.6-flash, too small for a "
+            f"30-author run; Groq's free tier has far higher daily headroom)")
     LOG(f"- length target: {LENGTH_TARGET_SPLIT} (ghosts/DECISIONS.md item 4, "
         f"NOT forget10 -- see this script's module docstring, departure 2)")
     LOG(f"- goodreads keyword pool: "
@@ -861,9 +930,12 @@ def main() -> int:
     if args.provider == "anthropic":
         from anthropic import Anthropic
         client = Anthropic(api_key=api_key)
-    else:
+    elif args.provider == "gemini":
         from google import genai
         client = genai.Client(api_key=api_key)
+    else:
+        from openai import OpenAI
+        client = OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
 
     LOG("## 4. Generation")
     per_author_summary = []
