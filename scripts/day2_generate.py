@@ -516,15 +516,24 @@ def extract_json(text: str) -> dict:
 
 def request_with_backoff(fn, label: str, max_attempts: int = 4, base_delay: float = 5.0):
     """Retries a transient request-level failure (network blip, 429/5xx server
-    overload) with exponential backoff. Distinct from the JSON-parse retry loop
-    in call_anthropic/call_gemini below, which retries a SUCCESSFUL response
-    that didn't parse -- this retries a request that never got a response at
-    all. Found missing during the actual Day 2 pilot run: a transient Gemini
-    503 ("high demand") crashed the whole script instead of retrying."""
+    overload) with exponential backoff. Does NOT retry a definitive 4xx client
+    error (e.g. 400 bad request) other than 429 -- resending an identical
+    invalid request is pointless; the caller's own attempt loop (which mutates
+    the prompt) is what should react to it, not this one. Distinct from the
+    JSON-parse retry loop in call_anthropic/call_gemini/call_groq below, which
+    retries a SUCCESSFUL response that didn't parse -- this retries a request
+    that never got a response at all. Found missing during the actual Day 2
+    pilot run: a transient Gemini 503 ("high demand") crashed the whole
+    script instead of retrying."""
     for i in range(max_attempts):
         try:
             return fn()
         except Exception as exc:
+            status = getattr(exc, "status_code", None)
+            non_retryable = status is not None and 400 <= status < 500 and status != 429
+            if non_retryable:
+                print(f"    {label} request error ({exc}); not retrying (client error {status})")
+                raise
             if i == max_attempts - 1:
                 raise
             wait = base_delay * (2 ** i)
@@ -541,25 +550,25 @@ def call_anthropic(client, model: str, temperature: float, max_tokens: int,
     usage = {}
     attempt_prompt = prompt
     for attempt in range(1, max_retries + 2):
-        resp = request_with_backoff(
-            lambda: client.messages.create(
-                model=model,
-                max_tokens=max_tokens,
-                temperature=temperature,
-                system=SYSTEM_PROMPT,
-                messages=[{"role": "user", "content": attempt_prompt}],
-            ),
-            label="Anthropic",
-        )
-        raw_text = "".join(
-            block.text for block in resp.content if getattr(block, "type", "") == "text"
-        )
-        usage = {
-            "input_tokens": resp.usage.input_tokens,
-            "output_tokens": resp.usage.output_tokens,
-            "attempts": attempt,
-        }
         try:
+            resp = request_with_backoff(
+                lambda: client.messages.create(
+                    model=model,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    system=SYSTEM_PROMPT,
+                    messages=[{"role": "user", "content": attempt_prompt}],
+                ),
+                label="Anthropic",
+            )
+            raw_text = "".join(
+                block.text for block in resp.content if getattr(block, "type", "") == "text"
+            )
+            usage = {
+                "input_tokens": resp.usage.input_tokens,
+                "output_tokens": resp.usage.output_tokens,
+                "attempts": attempt,
+            }
             parsed = extract_json(raw_text)
             if not isinstance(parsed, dict) or "qa" not in parsed:
                 raise ValueError("missing 'qa' key")
@@ -588,27 +597,27 @@ def call_gemini(client, model: str, temperature: float, max_tokens: int,
     usage = {}
     attempt_prompt = prompt
     for attempt in range(1, max_retries + 2):
-        resp = request_with_backoff(
-            lambda: client.models.generate_content(
-                model=model,
-                contents=attempt_prompt,
-                config=types.GenerateContentConfig(
-                    system_instruction=SYSTEM_PROMPT,
-                    temperature=temperature,
-                    max_output_tokens=max_tokens,
-                    response_mime_type="application/json",
-                ),
-            ),
-            label="Gemini",
-        )
-        raw_text = resp.text or ""
-        meta = getattr(resp, "usage_metadata", None)
-        usage = {
-            "input_tokens": getattr(meta, "prompt_token_count", None),
-            "output_tokens": getattr(meta, "candidates_token_count", None),
-            "attempts": attempt,
-        }
         try:
+            resp = request_with_backoff(
+                lambda: client.models.generate_content(
+                    model=model,
+                    contents=attempt_prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=SYSTEM_PROMPT,
+                        temperature=temperature,
+                        max_output_tokens=max_tokens,
+                        response_mime_type="application/json",
+                    ),
+                ),
+                label="Gemini",
+            )
+            raw_text = resp.text or ""
+            meta = getattr(resp, "usage_metadata", None)
+            usage = {
+                "input_tokens": getattr(meta, "prompt_token_count", None),
+                "output_tokens": getattr(meta, "candidates_token_count", None),
+                "attempts": attempt,
+            }
             parsed = extract_json(raw_text)
             if not isinstance(parsed, dict) or "qa" not in parsed:
                 raise ValueError("missing 'qa' key")
@@ -637,26 +646,26 @@ def call_groq(client, model: str, temperature: float, max_tokens: int,
     usage = {}
     attempt_prompt = prompt
     for attempt in range(1, max_retries + 2):
-        resp = request_with_backoff(
-            lambda: client.chat.completions.create(
-                model=model,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                response_format={"type": "json_object"},
-                messages=[
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": attempt_prompt},
-                ],
-            ),
-            label="Groq",
-        )
-        raw_text = resp.choices[0].message.content or ""
-        usage = {
-            "input_tokens": getattr(resp.usage, "prompt_tokens", None),
-            "output_tokens": getattr(resp.usage, "completion_tokens", None),
-            "attempts": attempt,
-        }
         try:
+            resp = request_with_backoff(
+                lambda: client.chat.completions.create(
+                    model=model,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    response_format={"type": "json_object"},
+                    messages=[
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": attempt_prompt},
+                    ],
+                ),
+                label="Groq",
+            )
+            raw_text = resp.choices[0].message.content or ""
+            usage = {
+                "input_tokens": getattr(resp.usage, "prompt_tokens", None),
+                "output_tokens": getattr(resp.usage, "completion_tokens", None),
+                "attempts": attempt,
+            }
             parsed = extract_json(raw_text)
             if not isinstance(parsed, dict) or "qa" not in parsed:
                 raise ValueError("missing 'qa' key")
