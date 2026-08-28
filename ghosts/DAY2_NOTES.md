@@ -95,3 +95,40 @@ differs from the earlier partial attempt; only this run's checkpoints are kept.
 **Next:** authors 0 and 3 still need a backfill (`--resume` will pick them up
 automatically whenever the full run's completeness check finds them missing).
 Proceeding to authors 5-29.
+
+## Full run (2026-08-28) — Groq daily token quota discovered, --resume bug found
+
+The authors 5-29 run got as far as author 7 (5,6,7 succeeded), then authors 8-18
+(eleven in a row) all failed identically:
+
+```
+Error code: 429 - {'error': {'message': 'Rate limit reached for model
+`openai/gpt-oss-120b` ... on tokens per day (TPD): Limit 200000, Used 198201,
+Requested 7693. Please try again in 42m26.208s. ...'}}
+```
+
+**Real, previously-unknown constraint:** Groq's free/on-demand tier caps
+`openai/gpt-oss-120b` at **200,000 tokens/day**, not just the 8,000 TPM already
+known. This did not appear in the docs page fetched when D-004 was written (only
+TPM was surfaced) — found only by hitting it live, same as Gemini's 20/day cap.
+At this prompt's real per-request cost (~5,100-5,300 input + up to 2,500
+max_tokens ≈ 7,700 requested), that's roughly **26 requests/day** of headroom —
+tight for 30 authors, tighter still once failed-attempt retries (which still
+consume real tokens, since the model did generate something before validation
+rejected it) are counted. Unlike Gemini's hard reset, this is a **rolling**
+24-hour window — quota frees gradually as old requests age out, not all at once.
+
+**Compounding bug found and fixed separately:** a `--resume` backfill run for
+authors 0 and 3 (both FAILED) silently did nothing, because `--resume` was
+skipping any author with an *existing checkpoint file*, regardless of whether it
+recorded success. A FAILED checkpoint could never be retried. Fixed (commit
+`f832608`) to only skip on `status == "OK"`.
+
+**Status:** 6/30 authors OK (1,2,4,5,6,7 — need to confirm 5/6/7 specifically
+once the next run's log is checked), 15 known FAILED (0,3,8-18), 11 never
+attempted (19-29). Next steps, not yet decided as of this note: retry now that
+the rolling window has had time to free up (no cost either way), and/or spread
+remaining generation across `openai/gpt-oss-20b` as a second model with its own
+separate quota pool if the 120b window stays tight — the latter would mean the
+final 400 ghost authors are a mix of two Groq models, which is a real
+methodological wrinkle worth deciding deliberately, not defaulting into.
