@@ -146,6 +146,17 @@ wanted.
 `scripts/day2_generate.py` gained a third provider, `--provider groq`, now the
 default. The Anthropic and Gemini code paths both remain in the script, unchanged.
 
+**Model string correction, same day:** the first live call used
+`llama-3.3-70b-versatile` and failed immediately with a 404 from Groq's own API:
+*"The model `llama-3.3-70b-versatile` does not exist or you do not have access to
+it."* Checked directly against Groq's models documentation: that model is now listed
+Enterprise-tier only. No candidate was generated under it (the call failed before any
+checkpoint was written), so the default was corrected to `openai/gpt-oss-120b`
+(confirmed accessible on the free/developer tier: 250K TPM, 1K RPM) in place rather
+than opening a separate deviation entry — same category as D-003's gemini-2.5-flash
+correction: a vendor access-tier fact discovered at execution time, not a second
+scientific choice.
+
 ### Why — correcting D-003's own quota assumption
 D-003 assumed Gemini's free tier gave "~500 requests/day," based on published limits
 for `gemini-2.5-flash`. That assumption did not hold for the model actually used:

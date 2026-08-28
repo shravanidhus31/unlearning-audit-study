@@ -143,7 +143,12 @@ DEFAULT_MODEL_GEMINI = "gemini-3.6-flash"
 # docs/DEVIATIONS.md D-004: Gemini's real free quota is 20 req/day for
 # gemini-3.6-flash (confirmed on this project's account) -- too small for a
 # 30-author run. Groq's free tier has far higher daily headroom.
-DEFAULT_MODEL_GROQ = "llama-3.3-70b-versatile"
+# llama-3.3-70b-versatile returned a live 404 on first real call ("does not
+# exist or you do not have access to it") -- confirmed via Groq's own docs
+# page that it is now Enterprise-tier only. Corrected to openai/gpt-oss-120b
+# (accessible on the free/developer tier: 250K TPM, 1K RPM) before any
+# candidate was generated under the old model string.
+DEFAULT_MODEL_GROQ = "openai/gpt-oss-120b"
 DEFAULT_TEMPERATURE = 1.0
 DEFAULT_MAX_TOKENS = 4096
 
@@ -804,7 +809,7 @@ def main() -> int:
                          "(docs/DEVIATIONS.md D-003), or groq (D-004, current default).")
     ap.add_argument("--model", default=None,
                     help="Defaults to claude-opus-5 (anthropic), gemini-3.6-flash "
-                         "(gemini), or llama-3.3-70b-versatile (groq) if not given.")
+                         "(gemini), or openai/gpt-oss-120b (groq) if not given.")
     ap.add_argument("--temperature", type=float, default=DEFAULT_TEMPERATURE)
     ap.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
     ap.add_argument("--max-retries", type=int, default=2)
