@@ -132,3 +132,52 @@ remaining generation across `openai/gpt-oss-20b` as a second model with its own
 separate quota pool if the 120b window stays tight — the latter would mean the
 final 400 ghost authors are a mix of two Groq models, which is a real
 methodological wrinkle worth deciding deliberately, not defaulting into.
+
+## D-005 backfill complete (2026-09-02) — 30/30 generated, aggregate STOP, isolated to Anthropic
+
+All 30 authors finally generated: 14 Groq (`openai/gpt-oss-120b`, unchanged from
+Pilot 2) + 16 Anthropic (`claude-opus-5`, D-005 backfill). Length check on the
+full 600-row set:
+
+| | value |
+|---|---|
+| ghost mean | 49.25 tokens |
+| holdout10 mean | 42.33 tokens |
+| Cohen's d | +0.792 |
+| KS p | 1.29e-20 |
+| verdict | **STOP** |
+
+**Per-generator breakdown (diagnostic D-005 committed to running regardless of
+the aggregate result) isolates the problem to one generator:**
+
+| generator | n | mean | d | individually |
+|---|---|---|---|---|
+| Groq | 280 | 43.81 | +0.165 | PASSES (consistent with Pilot 2) |
+| Anthropic | 320 | 54.02 | **+1.354** | fails badly — drives the whole STOP |
+
+**Root cause — same class of issue as Gemini's Pilot 1, opposite direction.**
+`WORDS_PER_TOKEN_EMPIRICAL` (~1.04 tokens/word) was derived from Gemini's
+output and never re-verified for Anthropic (D-005 flagged this explicitly in
+advance: "should be spot-checked... before assuming it transfers a third
+time" — it didn't). Claude Opus 5's real prose runs measurably denser: told to
+write "~41 words," it measured 54.02 tokens — a real ratio of ~1.32
+tokens/word, not Gemini's ~1.04.
+
+**Fix:** `WORDS_PER_TOKEN_EMPIRICAL_ANTHROPIC = 41/54.02 ≈ 0.759`, applied only
+to `--provider anthropic` via a new `WORDS_PER_TOKEN_BY_PROVIDER` dict;
+`build_prompt()` now takes the ratio as a parameter instead of reading one
+global constant. Groq's instruction is unchanged (its subset already passed
+individually). New Anthropic instruction targets ~32 words instead of 41 —
+verified via dry-run before touching real generation again.
+
+**Cost note:** this is the second time real money was spent finding a length
+miscalibration (the 16 Anthropic authors from this run, ≈$1.87, need to be
+regenerated at ≈$1.50-2 more). Decided with the user explicitly rather than
+spent automatically, given the budget is a hard $5 constraint, not a
+convenience.
+
+**Next:** regenerate exactly the 16 Anthropic author_ids (8,10,11,17-29) under
+the corrected instruction — no `--resume` for this step, since all 16 already
+have an "OK" checkpoint (--resume would wrongly treat that as done) and the
+whole point is to force a fresh generation with the new instruction. Groq's 14
+untouched. Then re-run the full 600-row length check.

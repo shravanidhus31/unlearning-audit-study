@@ -128,10 +128,24 @@ LENGTH_TARGET_SPLIT = "holdout10"
 # gemini-3.6-flash): instructing "~32 words" (the prior guess of 0.75
 # words-per-token) produced a measured ghost mean of 33.27 Llama tokens
 # against the 42.33 target -- i.e. real output ran ~1.04 tokens/word for
-# this generator's prose, not the assumed 1.33 (0.75 words/token). This
-# constant is Gemini-specific data; re-derive from a fresh pilot before
-# trusting it for a different provider (e.g. if reverting to Anthropic).
+# this generator's prose, not the assumed 1.33 (0.75 words/token).
 WORDS_PER_TOKEN_EMPIRICAL = 1.0 / 1.04
+
+# D-005 backfill: the Gemini-derived constant above did NOT transfer to
+# Anthropic. All 30 authors generated (14 Groq, 16 Anthropic) at "~41 words"
+# measured mean=49.25 tokens overall (STOP, d=+0.792) -- but split by
+# generator, Groq alone was fine (mean=43.81, d=+0.165, matches Pilot 2)
+# while Anthropic alone badly overshot (mean=54.02, d=+1.354). Claude Opus 5
+# runs denser prose: real ratio 54.02 measured tokens / 41 instructed words
+# = ~1.32 tokens/word, not Gemini's ~1.04. Re-derived here from that data;
+# re-check again before trusting it for a 4th provider.
+WORDS_PER_TOKEN_EMPIRICAL_ANTHROPIC = 41.0 / 54.02
+
+WORDS_PER_TOKEN_BY_PROVIDER = {
+    "anthropic": WORDS_PER_TOKEN_EMPIRICAL_ANTHROPIC,
+    "gemini": WORDS_PER_TOKEN_EMPIRICAL,
+    "groq": WORDS_PER_TOKEN_EMPIRICAL,
+}
 
 # ghosts/DECISIONS.md item 5 (as amended by docs/DEVIATIONS.md D-003):
 # model string pinned here, per provider, at first use.
@@ -434,7 +448,8 @@ def format_exemplar(ex: dict) -> str:
 
 
 def build_prompt(slot: dict, schema: dict, exemplars: list[dict],
-                 keywords: list[str], length_target: dict) -> str:
+                 keywords: list[str], length_target: dict,
+                 words_per_token: float = WORDS_PER_TOKEN_EMPIRICAL) -> str:
     attr = schema["attribute_schema"]
     exemplar_block = "\n\n".join(format_exemplar(e) for e in exemplars)
     topic_block = "\n".join(
@@ -476,9 +491,9 @@ the exemplar questions' wording) ---
 --- ANSWER LENGTH (measured with the Llama tokenizer, add_special_tokens=True) ---
 Target mean {mean_tok:.2f} tokens per answer, sd {sd_tok:.2f} (this is TOFU holdout10's \
 real distribution). As a practical word-count guide: aim for roughly \
-{mean_tok*WORDS_PER_TOKEN_EMPIRICAL:.0f} words on average per answer, with natural \
-variation from about {(mean_tok - sd_tok)*WORDS_PER_TOKEN_EMPIRICAL:.0f} to \
-{(mean_tok + sd_tok)*WORDS_PER_TOKEN_EMPIRICAL:.0f} words -- these answers should read \
+{mean_tok*words_per_token:.0f} words on average per answer, with natural \
+variation from about {(mean_tok - sd_tok)*words_per_token:.0f} to \
+{(mean_tok + sd_tok)*words_per_token:.0f} words -- these answers should read \
 as substantive, multi-clause explanations, not terse one-liners. Do not make every \
 answer the same length. Each answer must be self-contained (understandable without \
 reading the question).
@@ -945,12 +960,14 @@ def main() -> int:
     LOG(f"  30 slots built (seed={args.seed}); this run covers author_id(s): {author_ids}")
     LOG("")
 
+    words_per_token = WORDS_PER_TOKEN_BY_PROVIDER.get(args.provider, WORDS_PER_TOKEN_EMPIRICAL)
+
     if args.dry_run:
         LOG("## 4. DRY RUN -- prompt(s) below, no API calls made")
         for aid in author_ids:
             slot = slots[aid]
             kw = keywords_for_author(pool, aid) if pool else []
-            prompt = build_prompt(slot, schema, exemplars, kw, length_target)
+            prompt = build_prompt(slot, schema, exemplars, kw, length_target, words_per_token)
             LOG(f"\n----- author_id {aid} prompt -----\n{prompt}\n")
         LOG.dump(os.path.join(args.outdir, "generation_log.md"))
         return 0
@@ -994,7 +1011,7 @@ def main() -> int:
 
         slot = slots[aid]
         kw = keywords_for_author(pool, aid) if pool else []
-        prompt = build_prompt(slot, schema, exemplars, kw, length_target)
+        prompt = build_prompt(slot, schema, exemplars, kw, length_target, words_per_token)
         t0 = time.time()
         parsed, usage = call_llm(
             args.provider, client, args.model, args.temperature, args.max_tokens, prompt,
