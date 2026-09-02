@@ -181,3 +181,45 @@ the corrected instruction — no `--resume` for this step, since all 16 already
 have an "OK" checkpoint (--resume would wrongly treat that as done) and the
 whole point is to force a fresh generation with the new instruction. Groq's 14
 untouched. Then re-run the full 600-row length check.
+
+## D-005 closed: accepted at second-round Anthropic recalibration, budget exhausted
+
+Second regeneration round (32-word target, still `--provider anthropic`,
+authors 8,10,11,17-29) improved things substantially but did not fully clear
+the gate:
+
+| | round 1 (41 words) | round 2 (32 words) |
+|---|---|---|
+| Anthropic-only mean | 54.02 | 45.32 |
+| Anthropic-only d | +1.354 | +0.342 |
+| **aggregate (600 rows) d** | +0.792 | **+0.289** |
+| aggregate verdict | STOP | STOP |
+
+Groq's 14 authors unchanged throughout (d=+0.165, PASSES on their own). A
+two-point fit across both Anthropic rounds (41w→54.02 tok, 32w→45.32 tok)
+implies a non-proportional relationship — Claude appears to add a roughly
+constant amount of elaboration regardless of how short the instruction asks
+for, not a fixed multiplier — and points to ~29 words as the next target,
+which would likely land close to the true 42.33 mean.
+
+**Decision: no third round.** The user's Anthropic budget ($5, spent finding
+two length recalibrations: round 1 ≈$1.87, round 2 ≈$1.78) is exhausted — a
+third round was estimated at another ≈$1.50-1.60, which isn't available.
+Explicitly decided with the user rather than assumed.
+
+**Why this is a legitimate stopping point, not a corner cut:** the Day 2
+length check has always been a *convenience* gate (this script's own header:
+"convenience gate; Day 4 is the mandatory version"), not the pre-registered
+pass/fail criterion. The actual binding test is Day 4's battery against the
+final trimmed 400 rows, and spec §2.2 explicitly permits one
+regenerate-and-retest cycle if *that* fails — which remains available later if
+needed and funds allow. Stopping here defers further Anthropic-specific
+tuning to that mandatory checkpoint rather than skipping a required step.
+
+**Final Day 2 state, accepted as-is:** 600/600 QA rows, 30/30 authors, mix of
+14 Groq (`openai/gpt-oss-120b`) + 16 Anthropic (`claude-opus-5`, second-round
+calibration). Aggregate length check: mean 44.61, d=+0.289, KS p=3.59e-14,
+STOP (informational — not blocking Day 3). Per-generator breakdown recorded
+above for the dataset card / any future diagnosis.
+
+**Ready for Day 3** (collision filter, spec §2.2 step 3).

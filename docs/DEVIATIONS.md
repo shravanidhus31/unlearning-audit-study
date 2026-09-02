@@ -208,7 +208,7 @@ paths coexist in the script; checkpoints are provider-tagged in their `_meta` bl
 | Recorded (UTC) | 2026-09-01 |
 | Track | D — Ghost set construction, spec §2.2 step 2 |
 | Type | Pre-registered value reverted (partially) + a new, explicit choice: the final 400 ghost authors are NOT all from one generator. |
-| Status | Open — closes when the Day 4 validation battery is run against the completed, mixed-generator 30-author set |
+| Status | Generation complete, length gate accepted with a known gap; formally closes when the Day 4 validation battery is run against this set (see addendum below) |
 
 ### What changed
 By this point, 14 of 30 authors had real, successfully-generated checkpoints from
@@ -256,3 +256,27 @@ result, not only if it fails.
 Unlike D-003/D-004, there is no clean "revert" — the ghost set is now permanently a
 Groq+Anthropic mix unless the 14 Groq authors are deliberately discarded and
 regenerated later (a future decision, not implied by this one).
+
+### Addendum 2026-09-02 — length gate accepted, budget exhausted, not a third round
+
+The "known, stated risk" above materialized immediately: Anthropic's real output
+badly overshot the length target (D-005 required its own two-round recalibration,
+full detail in `ghosts/DAY2_NOTES.md` "D-005 closed" section). After two paid
+rounds (≈$1.87 + ≈$1.78 of the user's $5 Anthropic budget), the aggregate 600-row
+length check improved from d=+0.792 (STOP) to d=+0.289 (still STOP, but close) —
+Anthropic-alone from d=+1.354 to d=+0.342. A third round, estimated at another
+≈$1.50-1.60, was not pursued: **the user has no more funds**, stated explicitly.
+
+This is accepted as final for Day 2. Justification: this length check is a
+pre-registered *convenience* gate (this script's own comment: "convenience gate;
+Day 4 is the mandatory version"), not itself a pass/fail criterion — the binding
+test is Day 4's battery on the final trimmed 400, which spec §2.2 already permits
+one regenerate-and-retest cycle against if it fails. Stopping here spends that
+permitted cycle's worth of scrutiny at the point where it is actually required,
+rather than exhausting the budget perfecting a non-binding pre-check.
+
+**Final, accepted Day 2 state:** 600/600 rows, 30/30 authors, 14 Groq + 16
+Anthropic. Length check: mean 44.61 tokens (target 42.33), d=+0.289, KS
+p=3.59e-14 — logged, not remediated further. Per-generator breakdown preserved
+in `DAY2_NOTES.md` for the eventual dataset card and for diagnosing Day 4 if it
+fails on length specifically.
