@@ -544,7 +544,17 @@ def request_with_backoff(fn, label: str, max_attempts: int = 4, base_delay: floa
 
 def call_anthropic(client, model: str, temperature: float, max_tokens: int,
                    prompt: str, max_retries: int = 2) -> tuple[dict | None, dict]:
-    """Returns (parsed_json_or_None, usage_and_meta)."""
+    """Returns (parsed_json_or_None, usage_and_meta).
+
+    `temperature` is accepted for CLI-signature symmetry with the other two
+    providers but NOT forwarded to the API call: Claude Opus 5 (this script's
+    only Anthropic model, DEFAULT_MODEL_ANTHROPIC) does not accept a sampling
+    parameter at all -- the `anthropic` Python SDK 1.x enforces this
+    client-side (TypeError on `temperature=`) instead of the API returning a
+    400 for it, which is what happened live: the pilot crashed immediately,
+    before any request was sent, so no API credits were spent on the failed
+    attempts. Confirmed via the bundled claude-api skill's SDK upgrade guide.
+    """
     last_error = None
     raw_text = ""
     usage = {}
@@ -555,7 +565,6 @@ def call_anthropic(client, model: str, temperature: float, max_tokens: int,
                 lambda: client.messages.create(
                     model=model,
                     max_tokens=max_tokens,
-                    temperature=temperature,
                     system=SYSTEM_PROMPT,
                     messages=[{"role": "user", "content": attempt_prompt}],
                 ),
