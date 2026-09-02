@@ -77,3 +77,10 @@ proved too small for a 30-author run. Primary generator is now Groq
 (`openai/gpt-oss-120b` — `llama-3.3-70b-versatile` was tried first but is
 Enterprise-tier only on Groq, corrected same day before any candidate was
 generated). Anthropic and Gemini code paths both remain available.
+
+**Amended a third time 2026-09-01 — see `docs/DEVIATIONS.md` D-005.** Groq's daily
+token quota and a recurring JSON-validation error stalled the run at 14/30
+authors. Rather than discard that real data, the remaining ~16 authors are
+generated with Anthropic (`claude-opus-5`, now funded) — the final ghost set is a
+deliberate, documented mix of Groq and Anthropic, traceable per-author via each
+checkpoint's `_meta.provider`.

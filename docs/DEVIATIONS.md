@@ -200,3 +200,59 @@ final 400.
 Same as D-003: no code change needed to go back to `--provider gemini` (once its
 daily quota resets) or `--provider anthropic` (once funded). All three provider code
 paths coexist in the script; checkpoints are provider-tagged in their `_meta` block.
+
+## D-005 — Remaining authors backfilled with Anthropic; ghost set is mixed-generator
+
+| Field | Value |
+|---|---|
+| Recorded (UTC) | 2026-09-01 |
+| Track | D — Ghost set construction, spec §2.2 step 2 |
+| Type | Pre-registered value reverted (partially) + a new, explicit choice: the final 400 ghost authors are NOT all from one generator. |
+| Status | Open — closes when the Day 4 validation battery is run against the completed, mixed-generator 30-author set |
+
+### What changed
+By this point, 14 of 30 authors had real, successfully-generated checkpoints from
+Groq (`openai/gpt-oss-120b`): author_ids 0,1,2,3,4,5,6,7,9,12,13,14,15,16. The
+remaining 16 (8,10,11,17,18,19-29) were either stuck on Groq's `json_validate_failed`
+error (unfixable from our side — Groq returns an empty `failed_generation`, giving
+nothing to diagnose) or blocked by Groq's 200K-tokens/day cap (D-004 addendum).
+
+Rather than either (a) waiting an unknown number of hours/days for Groq's rolling
+daily quota to free enough headroom to finish the remaining 16, or (b) discarding the
+14 real, valid Groq authors to regenerate all 30 from a single generator, the 16
+remaining authors will be generated with `--provider anthropic` (funds added to the
+account) and the 14 Groq authors will be kept as-is.
+
+### Why this is a deliberate choice, not a shortcut
+The 14 Groq authors are genuinely valid data — passing them through spec's own
+Day 2 pilot length check (Pilot 2, `DAY2_NOTES.md`: d=+0.122, KS p=0.0159, PROCEED)
+before this decision was made. Discarding them would trade real, already-validated
+work for uniformity alone, with no stated scientific reason. Every checkpoint already
+records its generator in `_meta.provider` and `_meta.model` (added when the provider
+flag was first introduced), so the final `candidates_raw.jsonl` and `final_400.jsonl`
+can always be split and reported by generator — this was not retrofitted for this
+decision, it was already in place.
+
+### Known, stated risk (extends D-003/D-004, does not resolve it)
+The ghost set's stylistic distance from TOFU's real GPT-4-generated corpus is now a
+property of TWO generators, not one. Day 4's SBERT-centroid and perplexity tests run
+against the whole 400-row set; if they fail, it will not be possible to attribute the
+failure to "the generator" as a single variable without a further, separate per-
+generator breakdown (comparing Groq-only rows vs. Anthropic-only rows against
+holdout10 independently) — worth doing as a diagnostic regardless of the aggregate
+result, not only if it fails.
+
+### What did NOT change
+- Random seed remains **42**; ghost n unchanged (600 generated, trimmed to 400).
+- Length target remains **holdout10**, mean 42.33 / sd 10.92.
+- `WORDS_PER_TOKEN_EMPIRICAL` (Gemini-derived, empirically fine for Groq per Pilot 2)
+  carries over to Anthropic untested — Anthropic's own pilot output should be
+  spot-checked against it before assuming it transfers a third time.
+- Day 4 acceptance criteria, topic slots, exemplars, Day 1 schema reuse, JSON-output
+  hardening — all unchanged.
+- Spec §2.2 step 6 stands: never regenerate after seeing audit results.
+
+### Not a revert path this time
+Unlike D-003/D-004, there is no clean "revert" — the ghost set is now permanently a
+Groq+Anthropic mix unless the 14 Groq authors are deliberately discarded and
+regenerated later (a future decision, not implied by this one).
