@@ -186,10 +186,16 @@ DEFAULT_MAX_TOKENS = 4096
 # Groq's free/on-demand tier caps openai/gpt-oss-120b at 8000 TPM PER REQUEST
 # (input tokens + this ceiling, combined) -- a live 413 confirmed this on the
 # first real call ("Limit 8000, Requested 9217" at input ~5100-5300 +
-# max_tokens 4096). Every real answer set seen from any provider so far
-# (Anthropic, Gemini) topped out around 1600-1700 output tokens, so 2500
-# leaves headroom without exceeding the cap for the largest input seen (~5310).
-DEFAULT_MAX_TOKENS_GROQ = 2500
+# max_tokens 4096). 2500 was set from that ceiling, but D-006's backfill batch
+# showed it was too tight in practice: 5+ of 14 authors failed with the JSON
+# array truncated partway through the 20 answers ("got 6 qa entries, expected
+# 20", "got 15 qa entries", one explicit "max completion tokens reached
+# before generating a valid document") -- real, repeated evidence, not a
+# single noisy case. Raised to 2700, the most headroom available under the
+# 8000 TPM ceiling given the largest Groq input seen so far (~5206) plus a
+# safety margin -- there isn't more room to give without risking the 413
+# again, so this reduces truncation frequency, it does not guarantee zero.
+DEFAULT_MAX_TOKENS_GROQ = 2700
 
 GOODREADS_KEYWORDS_PER_AUTHOR = 6
 GOODREADS_SAMPLE_TITLES = 4000
