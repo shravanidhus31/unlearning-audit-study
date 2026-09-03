@@ -91,3 +91,32 @@ authors. Rather than discard that real data, the remaining ~16 authors are
 generated with Anthropic (`claude-opus-5`, now funded) — the final ghost set is a
 deliberate, documented mix of Groq and Anthropic, traceable per-author via each
 checkpoint's `_meta.provider`.
+
+## 6. Day 5 trim rule (spec §2.2 step 5)
+
+Recorded 2026-09-03, after seeing Day 4's aggregate FAIL verdicts (length,
+perplexity, SBERT) but **before** computing which specific author this rule would
+drop — the rule is fixed first, then applied, so it cannot be shaped by which
+author happens to be worst.
+
+**Rule:** 21 authors currently survive Day 3 (420 rows); the target is 400. Since
+420 = 21×20 and 400 = 20×20, drop exactly **one whole author** (20 rows) rather than
+a mix of individual rows from several authors — every surviving ghost stays a
+complete 20-QA identity, none partial.
+
+**Which author:** for each of the 21 authors, compute the mean of two z-scores
+against holdout10's distribution (from Day 4's own numbers): (a) that author's mean
+answer token length, (b) that author's mean answer perplexity under the base
+`meta-llama/Llama-3.2-1B-Instruct`. Drop the author with the **highest** combined
+|z-score| — spec 2.2 step 5 says "dropping the worst length/perplexity outliers,"
+naming exactly these two tests (not SBERT). Equal weighting is the simplest,
+least-tunable combination of the two named metrics.
+
+**Then:** re-run Day 4's full battery (all 3 tests) on the resulting 400, per spec
+2.2 step 5's explicit instruction ("trimming can shift distributions").
+
+**Known limitation, stated in advance:** Day 4 showed the perplexity gap is large
+(d≈1.4-1.7) and present in **both** generators, not concentrated in a few outlier
+rows. Dropping one author (≤5% of the set) is not expected to fully close a gap
+that size on its own — this rule is applied because it is the pre-registered next
+step regardless of outcome, not because it is expected to flip FAIL to PASS.
