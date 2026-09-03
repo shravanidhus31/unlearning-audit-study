@@ -173,18 +173,73 @@ def load_tofu_answers(split: str) -> list[str]:
     return list(ds["answer"])
 
 
+def load_ghost_providers(candidates_path: str, outdir: str) -> list[str]:
+    """Per-row generator provider (groq/anthropic/gemini), looked up from
+    each row's checkpoint file. Addition beyond spec, promised in D-005's
+    'known, stated risk' section: if Day 4 fails, attribute it to a specific
+    generator where possible rather than only reporting an aggregate."""
+    rows = [json.loads(l) for l in open(candidates_path, encoding="utf-8")]
+    ckpt_dir = os.path.join(outdir, "checkpoints")
+    cache: dict[int, str] = {}
+    providers = []
+    for r in rows:
+        aid = r["author_id"]
+        if aid not in cache:
+            ckpt = json.load(open(os.path.join(ckpt_dir, f"author_{aid:02d}.json"), encoding="utf-8"))
+            cache[aid] = ckpt.get("_meta", {}).get("provider", "unknown")
+        providers.append(cache[aid])
+    return providers
+
+
+def per_generator_breakdown(label: str, values: np.ndarray, providers: list[str],
+                            reference: np.ndarray) -> None:
+    """Logs a KS/Cohen's-d breakdown of `values` (aligned 1:1 with
+    `providers`) against `reference`, one row per distinct generator. NaNs in
+    `values` are dropped per subgroup, after slicing -- see test_perplexity's
+    docstring for why they can't be dropped before slicing."""
+    values = np.asarray(values)
+    for provider in sorted(set(providers)):
+        mask = np.array([p == provider for p in providers])
+        subset = values[mask]
+        subset = subset[~np.isnan(subset)]
+        if len(subset) < 2:
+            LOG(f"  {label} / {provider}: n={len(subset)} -- too few to test")
+            continue
+        r = ks_and_d(subset, reference)
+        LOG(f"  {label} / {provider}: n={r['n_a']}  mean={r['mean_a']:.2f}  "
+            f"d={r['cohens_d']:+.3f}  KS p={r['ks_pvalue']:.3g}  -> {r['verdict']}")
+
+
+def sbert_per_generator_breakdown(gh_emb: np.ndarray, providers: list[str],
+                                  c_holdout: np.ndarray, d_holdout_forget: float) -> None:
+    limit = SBERT_DISTANCE_RATIO_MAX * d_holdout_forget
+    for provider in sorted(set(providers)):
+        mask = np.array([p == provider for p in providers])
+        subset = gh_emb[mask]
+        if len(subset) < 1:
+            continue
+        c_provider = subset.mean(axis=0)
+        d = cosine_distance(c_provider, c_holdout)
+        verdict = "PASS" if d <= limit else "FAIL"
+        LOG(f"  sbert / {provider}: n={mask.sum()}  d(ghost,holdout)={d:.4f}  "
+            f"limit={limit:.4f}  -> {verdict}")
+
+
 # ----------------------------------------------------------------------------
 # Test 1 -- token length. Same tokenizer/convention as Day 1's length_stats.json
 # and Day 2's own convenience gate, but this run is the MANDATORY one.
 # ----------------------------------------------------------------------------
 
 
-def test_token_length(ghost_answers: list[str], holdout_answers: list[str]) -> dict:
+def test_token_length(ghost_answers: list[str], holdout_answers: list[str]):
+    """Returns (result_dict, gh_len, ho_len) -- the raw per-answer arrays are
+    returned too so main() can slice gh_len by generator for the D-005
+    per-generator diagnostic without re-tokenizing everything a second time."""
     from transformers import AutoTokenizer
     tok = AutoTokenizer.from_pretrained(TOKENIZER_ID)
     gh_len = np.array([len(tok(a, add_special_tokens=True)["input_ids"]) for a in ghost_answers], dtype=float)
     ho_len = np.array([len(tok(a, add_special_tokens=True)["input_ids"]) for a in holdout_answers], dtype=float)
-    return ks_and_d(gh_len, ho_len)
+    return ks_and_d(gh_len, ho_len), gh_len, ho_len
 
 
 # ----------------------------------------------------------------------------
@@ -207,7 +262,11 @@ def compute_perplexities(texts: list[str], model, tokenizer, device: str) -> np.
     return np.array(ppls, dtype=float)
 
 
-def test_perplexity(ghost_answers: list[str], holdout_answers: list[str], hf_token: str | None) -> dict:
+def test_perplexity(ghost_answers: list[str], holdout_answers: list[str], hf_token: str | None):
+    """Returns (result_dict, gh_ppl_raw, ho_ppl_clean). gh_ppl_raw keeps NaNs
+    in place (same length/order as ghost_answers) so main() can slice it by
+    generator for the D-005 diagnostic and only THEN drop NaNs per subgroup --
+    dropping them here first would break that index alignment."""
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -222,22 +281,22 @@ def test_perplexity(ghost_answers: list[str], holdout_answers: list[str], hf_tok
         torch_dtype=torch.float16 if device == "cuda" else torch.float32,
     ).to(device)
 
-    gh_ppl = compute_perplexities(ghost_answers, model, tok, device)
-    ho_ppl = compute_perplexities(holdout_answers, model, tok, device)
-
-    n_dropped_gh = int(np.isnan(gh_ppl).sum())
-    n_dropped_ho = int(np.isnan(ho_ppl).sum())
-    if n_dropped_gh or n_dropped_ho:
-        LOG(f"  [WARN] dropped {n_dropped_gh} ghost / {n_dropped_ho} holdout "
-            f"answers with < 2 tokens (perplexity undefined)")
-    gh_ppl = gh_ppl[~np.isnan(gh_ppl)]
-    ho_ppl = ho_ppl[~np.isnan(ho_ppl)]
+    gh_ppl_raw = compute_perplexities(ghost_answers, model, tok, device)
+    ho_ppl_raw = compute_perplexities(holdout_answers, model, tok, device)
 
     del model
     if device == "cuda":
         torch.cuda.empty_cache()
 
-    return ks_and_d(gh_ppl, ho_ppl)
+    n_dropped_gh = int(np.isnan(gh_ppl_raw).sum())
+    n_dropped_ho = int(np.isnan(ho_ppl_raw).sum())
+    if n_dropped_gh or n_dropped_ho:
+        LOG(f"  [WARN] dropped {n_dropped_gh} ghost / {n_dropped_ho} holdout "
+            f"answers with < 2 tokens (perplexity undefined)")
+    gh_ppl = gh_ppl_raw[~np.isnan(gh_ppl_raw)]
+    ho_ppl = ho_ppl_raw[~np.isnan(ho_ppl_raw)]
+
+    return ks_and_d(gh_ppl, ho_ppl), gh_ppl_raw, ho_ppl
 
 
 # ----------------------------------------------------------------------------
@@ -264,28 +323,31 @@ def resolve_sbert_revision(outdir: str) -> str:
     return revision
 
 
-def centroid(texts: list[str], model) -> np.ndarray:
-    embeddings = model.encode(texts, show_progress_bar=False, convert_to_numpy=True)
-    return embeddings.mean(axis=0)
-
-
 def test_sbert(ghost_answers: list[str], holdout_answers: list[str],
-               forget_answers: list[str], outdir: str) -> dict:
+               forget_answers: list[str], outdir: str):
+    """Returns (result_dict, gh_embeddings, c_holdout, d_holdout_forget) --
+    per-answer ghost embeddings (not just the centroid) are returned so
+    main() can compute a per-generator centroid for the D-005 diagnostic
+    without re-encoding or re-downloading the model."""
     from sentence_transformers import SentenceTransformer
 
     revision = resolve_sbert_revision(outdir)
     model = SentenceTransformer(SBERT_MODEL_ID, revision=revision)
 
-    c_ghost = centroid(ghost_answers, model)
-    c_holdout = centroid(holdout_answers, model)
-    c_forget = centroid(forget_answers, model)
+    gh_emb = model.encode(ghost_answers, show_progress_bar=False, convert_to_numpy=True)
+    ho_emb = model.encode(holdout_answers, show_progress_bar=False, convert_to_numpy=True)
+    fg_emb = model.encode(forget_answers, show_progress_bar=False, convert_to_numpy=True)
+
+    c_ghost = gh_emb.mean(axis=0)
+    c_holdout = ho_emb.mean(axis=0)
+    c_forget = fg_emb.mean(axis=0)
 
     d_ghost_holdout = cosine_distance(c_ghost, c_holdout)
     d_holdout_forget = cosine_distance(c_holdout, c_forget)
     limit = SBERT_DISTANCE_RATIO_MAX * d_holdout_forget
     verdict = "PASS" if d_ghost_holdout <= limit else "FAIL"
 
-    return {
+    result = {
         "sbert_revision": revision,
         "d_ghost_holdout": d_ghost_holdout,
         "d_holdout_forget": d_holdout_forget,
@@ -293,6 +355,7 @@ def test_sbert(ghost_answers: list[str], holdout_answers: list[str],
         "ratio_max": SBERT_DISTANCE_RATIO_MAX,
         "verdict": verdict,
     }
+    return result, gh_emb, c_holdout, d_holdout_forget
 
 
 # ----------------------------------------------------------------------------
@@ -381,6 +444,9 @@ def main() -> int:
           else f"{candidates_path} not found -- run Day 3 first")
     ghost_answers = load_ghost_answers(candidates_path)
     check("ghost_answer_count", len(ghost_answers) > 0, f"{len(ghost_answers)} ghost answers")
+    ghost_providers = load_ghost_providers(candidates_path, args.outdir)
+    provider_counts = {p: ghost_providers.count(p) for p in sorted(set(ghost_providers))}
+    LOG(f"  by generator: {provider_counts}")
     LOG("")
 
     LOG("## Load TOFU reference splits")
@@ -392,10 +458,12 @@ def main() -> int:
     results = {}
 
     LOG("## Test 1 -- Token length (KS test / Cohen's d)")
-    r1 = test_token_length(ghost_answers, holdout_answers)
+    r1, gh_len, ho_len = test_token_length(ghost_answers, holdout_answers)
     results["token_length"] = r1
     LOG(f"  ghost mean {r1['mean_a']:.2f}  holdout10 mean {r1['mean_b']:.2f}")
     LOG(f"  Cohen's d = {r1['cohens_d']:+.3f}   KS p = {r1['ks_pvalue']:.3g}   -> {r1['verdict']}")
+    LOG("  -- by generator (D-005 diagnostic, not a spec requirement) --")
+    per_generator_breakdown("length", gh_len, ghost_providers, ho_len)
     LOG("")
 
     LOG(f"## Test 2 -- Perplexity under base {BASE_MODEL_ID}")
@@ -407,10 +475,12 @@ def main() -> int:
         check("hf_token_present", bool(hf_token),
               f"{args.hf_token_env} is set" if hf_token
               else f"{args.hf_token_env} not set -- gated model access needs a token", fatal=False)
-        r2 = test_perplexity(ghost_answers, holdout_answers, hf_token)
+        r2, gh_ppl_raw, ho_ppl = test_perplexity(ghost_answers, holdout_answers, hf_token)
         results["perplexity"] = r2
         LOG(f"  ghost mean PPL {r2['mean_a']:.2f}  holdout10 mean PPL {r2['mean_b']:.2f}")
         LOG(f"  Cohen's d = {r2['cohens_d']:+.3f}   KS p = {r2['ks_pvalue']:.3g}   -> {r2['verdict']}")
+        LOG("  -- by generator (D-005 diagnostic, not a spec requirement) --")
+        per_generator_breakdown("perplexity", gh_ppl_raw, ghost_providers, ho_ppl)
     LOG("")
 
     LOG(f"## Test 3 -- SBERT centroid cosine distance ({SBERT_MODEL_ID})")
@@ -418,12 +488,15 @@ def main() -> int:
         LOG("  [SKIPPED via --skip-sbert] -- partial run, not the final Day 4 result")
         results["sbert"] = None
     else:
-        r3 = test_sbert(ghost_answers, holdout_answers, forget_answers, args.outdir)
+        r3, gh_emb, c_holdout, d_holdout_forget = test_sbert(
+            ghost_answers, holdout_answers, forget_answers, args.outdir)
         results["sbert"] = r3
         LOG(f"  d(ghost, holdout10)  = {r3['d_ghost_holdout']:.4f}")
         LOG(f"  d(holdout10, forget10) = {r3['d_holdout_forget']:.4f}")
         LOG(f"  limit ({SBERT_DISTANCE_RATIO_MAX}x)         = {r3['limit']:.4f}")
         LOG(f"  -> {r3['verdict']}")
+        LOG("  -- by generator (D-005 diagnostic, not a spec requirement) --")
+        sbert_per_generator_breakdown(gh_emb, ghost_providers, c_holdout, d_holdout_forget)
     LOG("")
 
     LOG("## Summary")
