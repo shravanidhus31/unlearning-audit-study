@@ -1,0 +1,28 @@
+{
+  "token_length": {
+    "n_a": 420,
+    "n_b": 400,
+    "mean_a": 44.445238095238096,
+    "mean_b": 42.325,
+    "cohens_d": 0.25086368820929655,
+    "ks_pvalue": 1.2820874940191305e-11,
+    "verdict": "FAIL"
+  },
+  "perplexity": {
+    "n_a": 420,
+    "n_b": 400,
+    "mean_a": 80.5783356666565,
+    "mean_b": 29.859140655994416,
+    "cohens_d": 1.3266637456230237,
+    "ks_pvalue": 4.723644248753991e-76,
+    "verdict": "FAIL"
+  },
+  "sbert": {
+    "sbert_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "d_ghost_holdout": 0.14264655113220215,
+    "d_holdout_forget": 0.08860361576080322,
+    "limit": 0.11075451970100403,
+    "ratio_max": 1.25,
+    "verdict": "FAIL"
+  }
+}
