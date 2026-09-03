@@ -39,6 +39,13 @@ recorded in `ghosts/validation_report.md` at first use.
 criterion is only meaningful against a fixed encoder. Pinning the revision as well as
 the name guards against the checkpoint changing under us mid-study.
 
+**Amended 2026-09-03 — distance metric.** The spec names "centroid distance" but not
+a metric. **Cosine distance** (`1 - cosine_similarity`) between the mean-pooled,
+L2-normalised embedding vectors of each split — the standard choice for
+sentence-transformer embeddings (Euclidean distance on raw SBERT vectors is
+non-standard and sensitive to vector norm, which cosine distance is invariant to).
+Recorded before Day 4 runs, not after seeing a result.
+
 ## 4. Generation length target (Day 2, spec §2.2 step 2)
 
 **Target:** holdout10 — mean **42.33**, sd **10.92** answer tokens
