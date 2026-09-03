@@ -13,9 +13,19 @@ Reads the Day 1 deliverables (schema.json, exemplars.json, length_stats.json)
 from --outdir instead of re-deriving them. If those files are missing, this
 script aborts -- it does not regenerate Day 1's work.
 
+docs/DEVIATIONS.md D-006: Day 3's collision filter dropped 53% of the
+original 30 (Wikidata exact-surname collisions far exceeding the ~33%
+"spare" buffer DECISIONS.md item 1 assumed). Backfilled with 20 more
+authors (ids 30-49) via the identical process -- see N_BACKFILL_AUTHORS
+below. The "30 new fictional authors" in the spec quote above is the
+original, pre-registered batch size; it did not change, generation was
+extended because collision attrition exceeded the assumed headroom.
+
 Deliverables written to --outdir (default: ghosts/):
     checkpoints/author_{NN}.json   one file per ghost author (resumable)
-    candidates_raw.jsonl           merged 600-row (30x20) candidate set
+    candidates_raw.jsonl           merged candidate set (600 rows for the
+                                    original 30 authors, up to 1000 with the
+                                    D-006 backfill)
     generation_log.md              model, params, full prompts, usage, costs,
                                     per-author status, the pilot length check
 
@@ -114,8 +124,17 @@ if hasattr(sys.stdout, "reconfigure"):
 # ----------------------------------------------------------------------------
 SEED = 42
 N_GHOST_AUTHORS = 30           # spec 2.2 step 2: "30 new fictional authors"
+# docs/DEVIATIONS.md D-006: Day 3's collision filter dropped 16/30 (53%)
+# authors -- exact-surname collisions against Wikidata's ~600K-person
+# reference set, far above the "spare" buffer DECISIONS.md item 1 assumed
+# (600 generated for 400 needed = 33% headroom, not 53%). Backfilling with
+# 20 more candidate authors, same generation process, same everything else
+# frozen -- only the pool SIZE grows. Author_ids 30-49 use this pool.
+N_BACKFILL_AUTHORS = 20
+N_GHOST_AUTHORS_TOTAL = N_GHOST_AUTHORS + N_BACKFILL_AUTHORS
 QA_PER_AUTHOR = 20
-N_TOTAL_CANDIDATES = N_GHOST_AUTHORS * QA_PER_AUTHOR   # 600
+N_TOTAL_CANDIDATES = N_GHOST_AUTHORS * QA_PER_AUTHOR   # 600, spec's original 30
+N_TOTAL_CANDIDATES_MAX = N_GHOST_AUTHORS_TOTAL * QA_PER_AUTHOR   # 1000, incl. D-006
 N_EXEMPLARS = 3
 
 TOKENIZER_ID = "open-unlearning/tofu_Llama-3.2-1B-Instruct_full"  # same as Day 1
@@ -344,6 +363,15 @@ BIRTHPLACES = [
     "Dunedin, New Zealand", "Porto, Portugal", "Almaty, Kazakhstan",
     "Accra, Ghana", "Suva, Fiji", "Cork, Ireland", "Tallinn, Estonia",
     "Guadalajara, Mexico", "Bratislava, Slovakia",
+    # D-006 backfill additions (author_ids 30-49) -- same "genuine world
+    # cities, broader than schema.json's sample" rationale as above.
+    "Ulaanbaatar, Mongolia", "Windhoek, Namibia", "Vientiane, Laos",
+    "Bishkek, Kyrgyzstan", "Praia, Cape Verde", "Sucre, Bolivia",
+    "Nicosia, Cyprus", "Gaborone, Botswana", "Podgorica, Montenegro",
+    "Male, Maldives", "Asmara, Eritrea", "Skopje, North Macedonia",
+    "Yaounde, Cameroon", "Tegucigalpa, Honduras", "Chisinau, Moldova",
+    "Antigua, Guatemala", "Bujumbura, Burundi", "Apia, Samoa",
+    "Georgetown, Guyana", "Thimphu, Bhutan",
 ]
 GENRES = [
     "historical fiction", "speculative fiction", "noir crime", "magical realism",
@@ -355,31 +383,68 @@ GENRES = [
     "biography-adjacent fiction", "children's fantasy", "campus novel",
     "post-apocalyptic fiction", "detective fiction", "epistolary fiction",
     "surrealist fiction", "sports fiction",
+    # D-006 backfill additions (author_ids 30-49).
+    "cli-fi (climate fiction)", "weird fiction", "picaresque novel",
+    "regional saga", "academic satire", "legal thriller", "eco-horror",
+    "steampunk", "found-footage fiction", "microhistory-inspired fiction",
+    "epistolary memoir", "road novel", "multigenerational family drama",
+    "afrofuturism", "border fiction", "culinary fiction",
+    "labor-movement fiction", "seafaring memoir", "myth retelling",
+    "post-colonial satire",
 ]
-assert len(BIRTHPLACES) >= N_GHOST_AUTHORS
-assert len(GENRES) >= N_GHOST_AUTHORS
+assert len(BIRTHPLACES) >= N_GHOST_AUTHORS_TOTAL
+assert len(GENRES) >= N_GHOST_AUTHORS_TOTAL
 
 
-def build_author_slots(seed: int = SEED, n: int = N_GHOST_AUTHORS) -> list[dict]:
-    """Deterministic (birthplace, genre, birth_year) per ghost author index."""
+def build_author_slots(seed: int = SEED, n: int = N_GHOST_AUTHORS_TOTAL) -> list[dict]:
+    """Deterministic (birthplace, genre, birth_year) per ghost author index.
+
+    D-006: shuffles the ORIGINAL 30's birthplace/genre pools separately from
+    the 20-author backfill pool, as two sequential draws from the same seeded
+    RNG -- NOT one shuffle over the combined 50-item lists. Shuffling the
+    combined lists under the same seed produces a different permutation than
+    shuffling 30 items did, which would silently reassign different
+    birthplaces/genres to authors 0-29 on any future re-derivation, even
+    though their real checkpoints (already generated, already shipped) keep
+    the original values. This construction reproduces authors 0-29's slots
+    byte-identically to before the pool was extended, then continues the same
+    RNG stream (still fully seed-determined) for the new author_ids 30-49."""
     rng = np.random.default_rng(seed)
-    birthplaces = list(BIRTHPLACES)
-    genres = list(GENRES)
-    rng.shuffle(birthplaces)
-    rng.shuffle(genres)
+    orig_birthplaces = list(BIRTHPLACES[:N_GHOST_AUTHORS])
+    orig_genres = list(GENRES[:N_GHOST_AUTHORS])
+    rng.shuffle(orig_birthplaces)
+    rng.shuffle(orig_genres)
     # schema.json's sampled birth-year range is 1934-1996; widen slightly
     # (1930-2005) since 30 new authors shouldn't be confined to a 20-author
     # sample's realised range.
-    years = rng.integers(1930, 2006, size=n)
-    return [
+    orig_years = rng.integers(1930, 2006, size=N_GHOST_AUTHORS)
+    slots = [
         {
             "author_id": i,
-            "birthplace": birthplaces[i],
-            "genre": genres[i],
-            "birth_year": int(years[i]),
+            "birthplace": orig_birthplaces[i],
+            "genre": orig_genres[i],
+            "birth_year": int(orig_years[i]),
         }
-        for i in range(n)
+        for i in range(N_GHOST_AUTHORS)
     ]
+
+    if n > N_GHOST_AUTHORS:
+        n_extra = n - N_GHOST_AUTHORS
+        extra_birthplaces = list(BIRTHPLACES[N_GHOST_AUTHORS:N_GHOST_AUTHORS_TOTAL])
+        extra_genres = list(GENRES[N_GHOST_AUTHORS:N_GHOST_AUTHORS_TOTAL])
+        rng.shuffle(extra_birthplaces)
+        rng.shuffle(extra_genres)
+        extra_years = rng.integers(1930, 2006, size=n_extra)
+        slots += [
+            {
+                "author_id": N_GHOST_AUTHORS + i,
+                "birthplace": extra_birthplaces[i],
+                "genre": extra_genres[i],
+                "birth_year": int(extra_years[i]),
+            }
+            for i in range(n_extra)
+        ]
+    return slots[:n]
 
 
 # ----------------------------------------------------------------------------
@@ -794,10 +859,10 @@ def selftest() -> int:
     slots1 = build_author_slots(seed=SEED)
     slots2 = build_author_slots(seed=SEED)
     t("author slots deterministic given fixed seed", slots1 == slots2)
-    t("30 author slots, all distinct birthplaces",
-      len({s["birthplace"] for s in slots1}) == N_GHOST_AUTHORS)
-    t("30 author slots, all distinct genres",
-      len({s["genre"] for s in slots1}) == N_GHOST_AUTHORS)
+    t(f"{N_GHOST_AUTHORS_TOTAL} author slots, all distinct birthplaces",
+      len({s["birthplace"] for s in slots1}) == N_GHOST_AUTHORS_TOTAL)
+    t(f"{N_GHOST_AUTHORS_TOTAL} author slots, all distinct genres",
+      len({s["genre"] for s in slots1}) == N_GHOST_AUTHORS_TOTAL)
 
     r1 = parse_author_range("0-4", 30)
     r2 = parse_author_range("5-29", 30)
@@ -838,7 +903,9 @@ def main() -> int:
                     help="Build and print prompt(s) for --authors without calling the API.")
     ap.add_argument("--outdir", default="ghosts")
     ap.add_argument("--authors", default=f"0-{N_GHOST_AUTHORS - 1}",
-                    help="e.g. '0-4' for a pilot, '5-29' for the rest.")
+                    help="e.g. '0-4' for a pilot, '5-29' for the rest of the "
+                         f"original 30, '30-{N_GHOST_AUTHORS_TOTAL - 1}' for "
+                         "the D-006 backfill pool.")
     ap.add_argument("--resume", action="store_true",
                     help="Skip authors that already have a checkpoint file.")
     ap.add_argument("--seed", type=int, default=SEED,
@@ -956,7 +1023,7 @@ def main() -> int:
     # ------------------------------------------------------------ slots
     LOG("## 3. Ghost author identity slots")
     slots = build_author_slots(seed=args.seed)
-    author_ids = parse_author_range(args.authors, N_GHOST_AUTHORS)
+    author_ids = parse_author_range(args.authors, N_GHOST_AUTHORS_TOTAL)
     LOG(f"  30 slots built (seed={args.seed}); this run covers author_id(s): {author_ids}")
     LOG("")
 
@@ -1059,7 +1126,7 @@ def main() -> int:
     LOG("## 5. Merge checkpoints -> candidates_raw.jsonl")
     all_rows = []
     ok_authors, failed_authors = [], []
-    for aid in range(N_GHOST_AUTHORS):
+    for aid in range(N_GHOST_AUTHORS_TOTAL):
         ckpt_path = os.path.join(ckpt_dir, f"author_{aid:02d}.json")
         if not os.path.exists(ckpt_path):
             continue
@@ -1088,7 +1155,7 @@ def main() -> int:
         for row in all_rows:
             fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
 
-    LOG(f"  {len(ok_authors)}/{N_GHOST_AUTHORS} authors OK so far "
+    LOG(f"  {len(ok_authors)}/{N_GHOST_AUTHORS_TOTAL} authors OK so far "
         f"({len(all_rows)} QA rows); failed: {failed_authors or 'none'}")
     LOG(f"  -> {candidates_path}")
     LOG("")
@@ -1117,11 +1184,11 @@ def main() -> int:
         LOG(f"| {aid} | {name} | {status} | {io} | {usage.get('attempts','-')} | `{prompt_hash}` |")
     LOG("")
     LOG(f"- finished (UTC): `{utcnow()}`")
-    LOG(f"- overall progress: {len(ok_authors)}/{N_GHOST_AUTHORS} authors OK, "
+    LOG(f"- overall progress: {len(ok_authors)}/{N_GHOST_AUTHORS_TOTAL} authors OK, "
         f"{len(failed_authors)} failed ({failed_authors})")
-    if len(ok_authors) == N_GHOST_AUTHORS:
-        LOG(f"- **Status: all {N_TOTAL_CANDIDATES} candidates generated. "
-            "Next: Day 3 collision filter, spec section 2.2 step 3.**")
+    if len(ok_authors) == N_GHOST_AUTHORS_TOTAL:
+        LOG(f"- **Status: all {N_TOTAL_CANDIDATES_MAX} candidates generated. "
+            "Next: re-run Day 3 collision filter on the expanded pool.**")
     else:
         LOG(f"- **Status: partial. Re-run with --authors covering the remaining "
             f"indices and --resume.**")

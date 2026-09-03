@@ -280,3 +280,71 @@ Anthropic. Length check: mean 44.61 tokens (target 42.33), d=+0.289, KS
 p=3.59e-14 — logged, not remediated further. Per-generator breakdown preserved
 in `DAY2_NOTES.md` for the eventual dataset card and for diagnosing Day 4 if it
 fails on length specifically.
+
+## D-006 — Backfilling 20 more authors: Day 3's collision filter exceeded the assumed buffer
+
+| Field | Value |
+|---|---|
+| Recorded (UTC) | 2026-09-02 |
+| Track | D — Ghost set construction, spec §2.2 steps 2-3 |
+| Type | Generation quantity extended beyond spec's literal "30 new fictional authors." No fuzzy threshold, reference-list method, or acceptance criterion touched. |
+| Status | Open — closes once the backfill batch is generated and re-run through the unmodified Day 3 filter |
+
+### What changed
+Day 3's collision filter (spec §2.2 step 3, `DECISIONS.md` items 1-2) dropped
+16 of the original 30 authors (53%) — all via the exact-surname rule against
+Wikidata's ~600K-person real-author reference set. Surviving: 14 authors / 280
+rows, below the 400 needed for Day 5's trim.
+
+`scripts/day2_generate.py` gained `N_BACKFILL_AUTHORS = 20`
+(`N_GHOST_AUTHORS_TOTAL = 50`), extending `BIRTHPLACES`/`GENRES` with 20 more
+entries each and author_ids 30-49. Generated via `--provider groq` (no
+Anthropic budget remains).
+
+### Why the collision rate was this high — not a bug, a real interaction between two separate decisions
+`DECISIONS.md` item 1's own justification for the exact-surname rule says *"a
+shared **distinctive** surname is a collision."* But the surnames that
+actually collided — Silva, Vega, Mwangi, Halvorsen, Vera, Lira, Vella, Chai,
+McLeod, Alwis — are common, populous surnames in their respective countries,
+not distinctive ones. Day 2's prompt instructs the generator to invent names
+"plausible for the given birthplace," which means ghost surnames are drawn
+from the same large, common-surname pools that a ~600K-person "anyone Wikidata
+ever listed as a writer" reference set inevitably covers heavily. Two
+independently reasonable, independently pre-registered design choices
+(plausible-sounding names; a broad, reproducible real-author reference list)
+interact to produce a much higher rejection rate than either decision alone
+would predict. Neither choice was wrong in isolation.
+
+### Why this is a quantity extension, not a threshold change
+`DECISIONS.md` item 1 (the fuzzy threshold and surname rule) is **not**
+touched, specifically because loosening it now — having just seen it reject
+53% — would be exactly the outcome-tuning the pre-registration discipline
+exists to prevent. `DECISIONS.md` item 1's own text already anticipated
+over-rejection as the accepted tradeoff direction ("we have spare candidates,
+600 generated for 400 needed") — it just assumed roughly 33% attrition, not
+53%. Generating more candidates to restore adequate headroom is a direct
+continuation of that stated design, not a new scientific choice.
+
+### Known, stated risk
+The 20 backfill authors go through the identical, unmodified collision filter.
+There is no guarantee this batch's rejection rate is close to 53% — the
+observed rate came from only 30 samples and carries real sampling uncertainty
+(a rough 95% interval is wide, roughly 35-70%). A second backfill round may be
+needed; this is being logged now, before the outcome of the backfill run is
+known, specifically so a second round (if needed) is a continuation of an
+already-disclosed plan rather than a fact discovered after the fact.
+
+### What did NOT change
+- Random seed remains **42**. Authors 0-29's birthplace/genre/birth_year
+  assignments are reproduced byte-identically to before this change — fixed a
+  real bug found while implementing this: naively re-shuffling the *combined*
+  50-item birthplace/genre pools under the same seed would have silently
+  reassigned different values to the already-generated, already-shipped
+  authors 0-29. `build_author_slots()` now shuffles the original 30's pool and
+  the new 20's pool as two sequential draws from the same seeded RNG instead,
+  verified against all three already-generated authors' real recorded
+  `_meta.slot` values (0, 8, 15, 29 checked; all byte-identical).
+- Length target, exemplars, topic slots, JSON-output hardening, Day 3's fuzzy
+  threshold and reference-list construction, Day 4 acceptance criteria — all
+  unchanged.
+- The original 30 authors' generated content is untouched.
